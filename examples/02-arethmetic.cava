@@ -1,0 +1,12 @@
+push 295    // Pushing 295 to the stack
+push 5      // Pushing 5 to the stack
+
+div         // Devide them
+
+push 1894   // Pushing 1894 to the stack
+add         // Sum 1894 and result above
+
+push -1243  // Pushing -1243 to the stack
+add         // Sum it
+
+wrt         // Print result in stdout

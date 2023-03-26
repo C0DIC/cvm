@@ -1,0 +1,10 @@
+// Swap
+
+push    5      // Pusing 5 to the stack    <- Stack[0]  = 5
+push    15     // Pusing 15 to the stack   <- Stack[1]  = 15
+push    25     // Pusing 25 to the stack   <- Stack[2]  = 25
+
+swp     0      // Swaping 25 and 5         <- Stack[0]  = 25, Stack[2]  = 5
+swp     1      // Swaping 5  and 15        <- Stack[1]  = 5,  Stack[2]  = 15
+
+wrt            // Should print 15

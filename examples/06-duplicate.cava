@@ -1,0 +1,8 @@
+push 5      // Pushing 5 to the stack      <- Stack[0]    = 5
+wrt         // Print it
+
+push 10     // Pushing 10 to the stack     <- Stack[1]    = 10
+wrt         // Print it
+
+dup  0      // Duplicate element of the stack by absolute addr (index in stack)
+wrt         // Print it

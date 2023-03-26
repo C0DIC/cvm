@@ -1,0 +1,6 @@
+push 20     // Pushing 20 to the stack
+push 30     // Pushing 30 to the stack
+
+hlt         // Stop vm
+
+wrt         // Unreachable code

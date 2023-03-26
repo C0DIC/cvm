@@ -1,0 +1,13 @@
+// goto also can go to labels as well
+
+goto main
+
+exit:       // Block creation
+    hlt
+
+main:
+    push 15     // Pushing 15 to the stack
+    push 15     // Pushing 15 to the stack
+
+    goto exit   // Skiping wrt instruction to exit block
+    wrt         // Never executed
