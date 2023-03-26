@@ -1,6 +1,6 @@
 # catastring
 
-String implementation in C. Created for using in development of Cata Programming Language but can be used in other cases
+[String implementation](https://github.com/C0DIC/catastring) in C. Created for using in development of [Cata Programming Language](https://github.com/C0DIC/cata) but can be used in other cases
 
 ## Usage
 
