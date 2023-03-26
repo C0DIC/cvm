@@ -1,4 +1,4 @@
-# CVM
+# cvm
 
 Cata Virtual Machine
 
