@@ -3,4 +3,4 @@ push 30     // Pushing 30 to the stack
 
 hlt         // Stop vm
 
-wrt         // Unreachable code
+wrtn  i64       // Unreachable code

@@ -3,4 +3,4 @@ push 15   // Pushing 15 to the stack
 
 add       // Sum 2 numbers
 
-wrt       // Print result (stack member above wrt instruction)
+wrtn i64     // Print result (stack member above wrt instruction)

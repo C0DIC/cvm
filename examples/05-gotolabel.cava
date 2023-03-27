@@ -10,4 +10,4 @@ main:
     push 15     // Pushing 15 to the stack
 
     goto exit   // Skiping wrt instruction to exit block
-    wrt         // Never executed
+    wrtn i64        // Never executed

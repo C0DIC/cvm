@@ -1,2 +1,2 @@
 push 1  // Pushing 1 to the stack
-wrt     // Print 1
+wrtn i64    // Print 1

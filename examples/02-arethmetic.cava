@@ -9,4 +9,4 @@ add         // Sum 1894 and result above
 push -1243  // Pushing -1243 to the stack
 add         // Sum it
 
-wrt         // Print result in stdout
+wrtn i64         // Print result in stdout

@@ -10,7 +10,7 @@ main:
         dup  1       // Duplicate
 
         add          // Sum it up
-        wrt          // Print
+        wrtn i64          // Print
 
         cmp 0        // Compare last number with limit (first line of main)
             hlt

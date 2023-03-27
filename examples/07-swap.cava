@@ -7,4 +7,4 @@ push    25     // Pusing 25 to the stack   <- Stack[2]  = 25
 swp     0      // Swaping 25 and 5         <- Stack[0]  = 25, Stack[2]  = 5
 swp     1      // Swaping 5  and 15        <- Stack[1]  = 5,  Stack[2]  = 15
 
-wrt            // Should print 15
+wrtn i64          // Should print 15
