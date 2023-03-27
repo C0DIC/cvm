@@ -23,7 +23,7 @@ If you found a bug or an error, please open an issue
 
 ## Docs: __Soon!__
 
-- [Cava](Docs.md)(Cata Virtual Assembly)
+- [Cava](Docs.md) (Cata Virtual Assembly)
 
 ## References
 
