@@ -13,9 +13,9 @@ Project is under heavy development
 
 ``` console
 make
-./cvm examples/03-write.cava -r
+./cvm examples/00-hello.cava -r
 ./cvm examples/08-fibonacci.cava -r
-./cvm examples/09-numhello.cava -r
+./cvm examples/09-triangle.cava -r
 ```
 
 ## Examples

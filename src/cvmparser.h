@@ -101,7 +101,22 @@ CataError parse_insts(CataStr source, CataVM *cvm) {
         token  = castr_untilc(' ', line);
 
         line   = castr_ltrim(' ', castr_untilc('\n', castr_cut_by(token.length, line)));
-        arg    = castr_ltrim(' ', castr_untilc(' ', line));
+
+        if (castr_startswith("\"", line)) {
+            line = castr_cut_by(1, line);
+
+            if (castr_has('"', line)) {
+                arg = castr_untilc('"', line);
+                line = castr_cut_by(1, line);
+            } else {
+                cvm_error(
+                    cvm->filename, cvm->instr_stack[cvm->instr_pos].line,
+                    ERR_SYNTAX_ERROR, "\" never closed");
+                return ERR_SYNTAX_ERROR;
+            }
+        } else {
+            arg    = castr_ltrim(' ', castr_untilc(' ', line));
+        }
         
         if (!castr_has('/', line))
              line   = castr_ltrim(' ', castr_untilc('\n', castr_cut_by(arg.length, line)));
@@ -118,11 +133,34 @@ CataError parse_insts(CataStr source, CataVM *cvm) {
 
         if (token.length != 0) {
 
-            if (castr_same(token, CS("push"))   ||
+            if (castr_same(token, CS("push"))) {
+                cvm->instr_stack[cvm->instr_stack_size].instr = token;
+
+                if (arg.length == 0) {
+                    fprintf(stderr,
+                            "%s:\n  |___%s: %lu: %s `"CS_PRI"`\n",
+                            cvm->filename, cvm_err_to_cstr(ERR_NO_ARGUMENT), 
+                            line_count, "excepted value after", CS_FMT(token)
+                    );
+                    return ERR_NO_ARGUMENT;
+                }
+
+                if (castr_startswith("\"", arg)) {
+                    arg = castr_cut_by(1, arg);
+                    cvm->instr_stack[cvm->instr_stack_size].arg.as_string   = castr_untilc('"', arg);
+                } else {
+                    cvm->instr_stack[cvm->instr_stack_size].arg   = makeObject(arg);
+                }
+
+                cvm->instr_stack[cvm->instr_stack_size].line   = line_count;
+                cvm->instr_stack_size += 1;
+            } else if (
                 castr_same(token, CS("if"))     ||
                 castr_same(token, CS("ifnt"))   ||
                 castr_same(token, CS("dup"))    ||
                 castr_same(token, CS("cmp"))    ||
+                castr_same(token, CS("wrt"))    ||
+                castr_same(token, CS("wrtn"))   ||
                 castr_same(token, CS("swp"))
                 ) {
                 cvm->instr_stack[cvm->instr_stack_size].instr = token;
@@ -144,7 +182,6 @@ CataError parse_insts(CataStr source, CataVM *cvm) {
 
                 if (isalpha(arg.data[0])) {
                     if (label_exist(cvm, arg)) {
-                        //printf("parser goto: %ld\n", label_indx(cvm, arg));
                         cvm->instr_stack[cvm->instr_stack_size].arg.as_int = label_indx(cvm, arg);
                         cvm->instr_stack[cvm->instr_stack_size].line       = line_count;
                         cvm->instr_stack_size += 1;
@@ -169,10 +206,10 @@ CataError parse_insts(CataStr source, CataVM *cvm) {
                     castr_same(token, CS("div"))    ||
                     castr_same(token, CS("mod"))    ||
                     castr_same(token, CS("hlt"))    ||
-                    castr_same(token, CS("wrt"))    ||
                     castr_same(token, CS("scn"))    ||
                     castr_same(token, CS("inc"))    ||
                     castr_same(token, CS("dec"))    ||
+                    castr_same(token, CS("pop"))    ||
                     castr_same(token, CS("dmp"))
                     )
                 {

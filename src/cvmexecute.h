@@ -68,6 +68,7 @@ CataError cvm_execute(CataVM *cvm) {
             }
 
             cvm->stack[cvm->stack_size - 2].as_int += cvm->stack[cvm->stack_size - 1].as_int;
+            cvm->stack[cvm->stack_size - 2].as_float += cvm->stack[cvm->stack_size - 1].as_float;
             cvm->stack_size -= 1;
             cvm->instr_pos += 1;
         } else if (castr_same(instr, CS("sub"))) {
@@ -88,6 +89,7 @@ CataError cvm_execute(CataVM *cvm) {
             }
 
             cvm->stack[cvm->stack_size - 2].as_int *= cvm->stack[cvm->stack_size - 1].as_int;
+            cvm->stack[cvm->stack_size - 2].as_float *= cvm->stack[cvm->stack_size - 1].as_float;
             cvm->stack_size -= 1;
             cvm->instr_pos += 1;
         } else if (castr_same(instr, CS("div"))) {
@@ -105,6 +107,7 @@ CataError cvm_execute(CataVM *cvm) {
             }
 
             cvm->stack[cvm->stack_size - 2].as_int /= cvm->stack[cvm->stack_size - 1].as_int;
+            cvm->stack[cvm->stack_size - 2].as_float /= cvm->stack[cvm->stack_size - 1].as_float;
             cvm->stack_size -= 1;
             cvm->instr_pos += 1;
         } else if (castr_same(instr, CS("mod"))) {
@@ -122,6 +125,7 @@ CataError cvm_execute(CataVM *cvm) {
             }
 
             cvm->stack[cvm->stack_size - 2].as_int %= cvm->stack[cvm->stack_size - 1].as_int;
+            cvm->stack[cvm->stack_size - 2].as_float = cvm->stack[cvm->stack_size - 2].as_int / 1.0;
             cvm->stack_size -= 1;
             cvm->instr_pos += 1;
         } else if (castr_same(instr, CS("inc"))) {
@@ -131,7 +135,8 @@ CataError cvm_execute(CataVM *cvm) {
                 return ERR_STACK_UNDERFLOW;
             }
 
-            cvm->stack[cvm->stack_size - 1].as_int += 1;
+            cvm->stack[cvm->stack_size - 1].as_int   += 1;
+            cvm->stack[cvm->stack_size - 1].as_float += 1.0;
             cvm->instr_pos += 1;
         } else if (castr_same(instr, CS("dec"))) {
             if (cvm->stack_size < 1) {
@@ -140,7 +145,17 @@ CataError cvm_execute(CataVM *cvm) {
                 return ERR_STACK_UNDERFLOW;
             }
 
-            cvm->stack[cvm->stack_size - 1].as_int -= 1;
+            cvm->stack[cvm->stack_size - 1].as_int   -= 1;
+            cvm->stack[cvm->stack_size - 1].as_float -= 1.0;
+            cvm->instr_pos += 1;
+        } else if (castr_same(instr, CS("pop"))) {
+            if (cvm->stack_size < 1) {
+                cvm_error(cvm->filename, cvm->instr_stack[cvm->instr_pos].line,
+                        ERR_STACK_UNDERFLOW, "stack underflow");
+                return ERR_STACK_UNDERFLOW;
+            }
+
+            cvm->stack_size -= 1;
             cvm->instr_pos += 1;
         } else if (castr_same(instr, CS("cmp"))) {
             if (cvm->instr_pos < 0 || cvm->instr_pos > cvm->instr_stack_size) {
@@ -158,7 +173,7 @@ CataError cvm_execute(CataVM *cvm) {
             cvm->halted = 1;
         } else if (castr_same(instr, CS("dmp"))) {
             for (size_t i = 0; i < cvm->stack_size; ++i) {
-                printf("Stack[%ld]: %ld\n", i, cvm->stack[i].as_int);
+                printf("Stack[%ld]: i64: %ld | f64: %lf | str:"CS_PRI"\n", i, cvm->stack[i].as_int, cvm->stack[i].as_float, CS_FMT(cvm->stack[i].as_string));
             }
             cvm->instr_pos += 1;
         } else if (castr_same(instr, CS("goto"))) {
@@ -201,7 +216,40 @@ CataError cvm_execute(CataVM *cvm) {
             cvm->stack_size += 1;
             cvm->instr_pos  += 1;
         } else if (castr_same(instr, CS("wrt"))) {
-            printf("%ld\n", cvm->stack[cvm->stack_size - 1].as_int);
+            if (castr_same(CS("i64"), arg.as_string)) {
+                printf("%ld", cvm->stack[cvm->stack_size - 1].as_int);
+            } else if (castr_same(CS("f64"), arg.as_string)) {
+                printf("%lf", cvm->stack[cvm->stack_size - 1].as_float);
+            } else if (castr_same(CS("str"), arg.as_string)) {
+                printf(CS_PRI"", CS_FMT(cvm->stack[cvm->stack_size - 1].as_string));
+            } else {
+                fprintf(stderr,
+                    "%s:\n  |___%s: %lu: %s `"CS_PRI"`\n",
+                    cvm->filename, cvm_err_to_cstr(ERR_UNKNOWN_TYPE), cvm->instr_stack[cvm->instr_pos].line,
+                    "unknown type", CS_FMT(arg.as_string)
+                );
+
+                return ERR_UNKNOWN_TYPE;
+            }
+
+            cvm->instr_pos  += 1;
+        } else if (castr_same(instr, CS("wrtn"))) {
+            if (castr_same(CS("i64"), arg.as_string)) {
+                printf("%ld\n", cvm->stack[cvm->stack_size - 1].as_int);
+            } else if (castr_same(CS("f64"), arg.as_string)) {
+                printf("%lf\n", cvm->stack[cvm->stack_size - 1].as_float);
+            } else if (castr_same(CS("str"), arg.as_string)) {
+                printf(CS_PRI"\n", CS_FMT(cvm->stack[cvm->stack_size - 1].as_string));
+            } else {
+                fprintf(stderr,
+                    "%s:\n  |___%s: %lu: %s `"CS_PRI"`\n",
+                    cvm->filename, cvm_err_to_cstr(ERR_UNKNOWN_TYPE), cvm->instr_stack[cvm->instr_pos].line,
+                    "unknown type", CS_FMT(arg.as_string)
+                );
+
+                return ERR_UNKNOWN_TYPE;
+            }
+
             cvm->instr_pos  += 1;
         } else if (castr_endswith(":", instr)) {
             cvm->instr_pos  += 1;

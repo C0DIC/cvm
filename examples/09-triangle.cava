@@ -1,0 +1,55 @@
+// Thats not the best solution, but it simple
+// because you get swap elements, interact with them and swaping back
+// so thier places never changed
+
+push 1     // j
+push 0     // k
+push 0     // i
+push " "
+push "*"
+
+main:
+    swp 2          // Swap "*" to i
+
+    ifnt 15
+        goto loop  // Print block
+    hlt
+
+loop:     // i here
+    swp 2       // Swap i to "*"
+
+    swp 1       // Swap "*" to k
+
+    cmp 0
+        goto continue
+
+    goto print
+    
+    continue:   // k here
+        pop         // Remove it
+        push 0      // Reset
+
+        swp 1       // Swap k to "*"
+
+        swp 0       // Swaping "*" to j
+        inc         // Increment it
+        swp 0       // Swaping j to "*"
+
+        swp 2       // Swap "*" to i
+        inc         // Increment i
+        swp 2       // Swap again
+
+        swp 3       // Swap "*" to " "
+        wrtn str
+        swp 3       // Swap back
+
+        goto main   // Return to main block
+
+print:
+    inc       // Increment k
+    swp 1     // Swaping k to "*"
+
+    wrt str   // Print it
+
+    swp 2     // Swaping to i
+    goto loop

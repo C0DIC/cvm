@@ -18,9 +18,10 @@
 #include <stdint.h>
 #include "../catastring/catastring.h"
 
-typedef union {
+typedef struct {
     int64_t  as_int;
     double   as_float;
+    CataStr  as_string;
 } Object;
 
 typedef struct {
@@ -42,8 +43,9 @@ Object makeObject(const CataStr obj);
 
 Object makeObject(const CataStr obj) {
     return (Object) {
+        .as_int = castr_to_lld(obj),
         .as_float = atof(obj.data),
-        .as_int = castr_to_lld(obj)
+        .as_string = obj
     };
 }
 
