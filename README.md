@@ -34,7 +34,7 @@ If you found a bug or an error, please open an issue
 - [Cata](https://github.com/C0DIC/cata)
 - [CataString](./catastring/) library for "strings" in C
 
-## Uninstall 
+## Uninstall
 
 ``` console
 make clean
