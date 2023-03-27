@@ -19,7 +19,7 @@ For example, instructions `with no argument`:
 
 - [add](#add)
 - [hlt](#hlt)
-- [wrt](#wrt)
+- [sub](#sub)
 - etc.
 
 ### push
@@ -29,7 +29,7 @@ Push element into the stack. Pushes it to the last free cell.
 _[Throws an error if the stack if full](Notes.md#vms-stack)_
 
 ``` text
-push (int | float)
+push (i64 (int) | f64 (double) | string)
 ```
 
 Example:
@@ -95,12 +95,30 @@ mod       // Substructs 10 from 5. Size is 1 now and element is -5
 
 ### wrt
 
-Print the element above
+Print the element above without new line
 Throws an error when it's noting to print or stack is empty
+
+```text
+wrt (str | i64 | f64)
+```
 
 ``` nasm
 push 56
-wrt       // Prints 56
+wrt i64       // Prints 56
+```
+
+### wrtn
+
+Print the element above with new line
+Throws an error when it's noting to print or stack is empty
+
+```text
+wrt (str | i64 | f64)
+```
+
+``` nasm
+push 56
+wrtn i64     // Prints 56
 ```
 
 ### hlt
@@ -191,7 +209,7 @@ Example:
 push 1
 
 if 1     // If the element above is 1
-    wrt  // Prints it
+    wrtn i64  // Prints it
 hlt      // Otherwise hlt
 ```
 
@@ -211,9 +229,9 @@ push 5
 push 1
 push 5
 
-cmp 0       // If the element above is equal to Stack[0]
-    wrt 5   // Prints 5
-hlt         // Otherwise hlt
+cmp 0          // If the element above is equal to Stack[0]
+    wrtn i64   // Prints 5
+hlt            // Otherwise hlt
 ```
 
 ## Labels
@@ -234,9 +252,9 @@ exit:     // "exit" block will be skipped, because of goto
 
 main:
     push -15
-    wrt        // Prints -15
+    wrtn i64       // Prints -15
     push 50
-    wrt        // Prints 50
+    wrt  i64      // Prints 50
 ```
 
 ## Comments
