@@ -1,10 +1,4 @@
-# Documentation
-
-## Virtual machine
-
-CVM is a full stack-based virtual machine. It means that all variables are stored in vm-stack. All operations and instructions also works with elements in vm's stack.
-
-## Cava
+# Cava
 
 Cava is `assembly language` for cvm (cata virtual machine)
 
