@@ -33,3 +33,9 @@ If you found a bug or an error, please open an issue
 - [JVM](https://en.wikipedia.org/wiki/Java_virtual_machine)
 - [Cata](https://github.com/C0DIC/cata)
 - [CataString](./catastring/) library for "strings" in C
+
+## Uninstall 
+
+``` console
+make clean
+```
