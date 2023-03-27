@@ -6,7 +6,7 @@ CVM is a full stack-based virtual machine. It means that all variables are store
 
 ## Cava
 
-Cava is `assembly language` of cvm (cata virtual machine)
+Cava is `assembly language` for cvm (cata virtual machine)
 
 ## Instructions
 
@@ -18,6 +18,7 @@ For example, instructions `with argument`:
 - [push](#push)
 - [goto](#goto)
 - [cmp](#cmp)
+
 - etc.
 
 For example, instructions `with no argument`:
@@ -39,7 +40,7 @@ push (int | float)
 
 Example:
 
-``` bash
+``` nasm
 push 10
 ```
 
@@ -48,7 +49,7 @@ push 10
 Plus two elements above `add` instruction and decrementing stack by one.
 Throws an error, if the stack size is less than 2
 
-``` bash
+``` nasm
 push 10
 push 10   // Stack size is 2 now
 add       // 10 + 10. Stack size is 1 now and element is 20
@@ -59,7 +60,7 @@ add       // 10 + 10. Stack size is 1 now and element is 20
 From the element that 2 above substructs the element above.
 Throws an error, if the stack size is less than 2
 
-``` bash
+``` nasm
 push 5
 push 10   // Stack size is 2 now
 sub       // 5 - 10. Size is 1 now and element is -5
@@ -70,7 +71,7 @@ sub       // 5 - 10. Size is 1 now and element is -5
 Multiplies two elements above.
 Throws an error, if the stack size is less than 2
 
-``` bash
+``` nasm
 push 5
 push 10   // Stack size is 2 now
 mult       // 5 * 10. Size is 1 now and element is 50
@@ -81,7 +82,7 @@ mult       // 5 * 10. Size is 1 now and element is 50
 Devide element that 2 above by the element above.
 Throws an error, if the stack size is less than 2
 
-``` bash
+``` nasm
 push 45
 push 5    // Stack size is 2 now
 div       // 45 / 5. Size is 1 now and element is 9
@@ -92,7 +93,7 @@ div       // 45 / 5. Size is 1 now and element is 9
 Devide element that 2 above by the element above and get the remainder.
 Throws an error, if the stack size is less than 2
 
-``` bash
+``` nasm
 push 5
 push 10   // Stack size is 2 now
 mod       // Substructs 10 from 5. Size is 1 now and element is -5
@@ -103,7 +104,7 @@ mod       // Substructs 10 from 5. Size is 1 now and element is -5
 Print the element above
 Throws an error when it's noting to print or stack is empty
 
-``` bash
+``` nasm
 push 56
 wrt       // Prints 56
 ```
@@ -112,7 +113,7 @@ wrt       // Prints 56
 
 Stops the vm immediately. Like exit() in `C` or `Python`.
 
-``` bash
+``` nasm
 hlt
 push 5 // Dead code
 ```
@@ -131,7 +132,7 @@ goto (int | block name)
 
 Example:
 
-``` bash
+``` nasm
 goto 1    // Instruction #0
 
 push 45   // Instruction #1
@@ -151,7 +152,7 @@ dup (int)
 
 Example:
 
-``` bash
+``` nasm
 push 90
 push 45
 
@@ -172,7 +173,7 @@ swp (int)
 
 Example:
 
-``` bash
+``` nasm
 push 45
 push 40
 
@@ -192,7 +193,7 @@ if (int)
 
 Example:
 
-``` bash
+``` nasm
 push 1
 
 if 1     // If the element above is 1
@@ -211,7 +212,7 @@ cmp (int)
 
 Example:
 
-``` bash
+``` nasm
 push 5
 push 1
 push 5
@@ -231,7 +232,7 @@ Creating the block of code to manage code execution.
 
 Example:
 
-``` bash
+``` nasm
 goto main // Will go to main block
 
 exit:     // "exit" block will be skipped, because of goto
@@ -248,7 +249,7 @@ main:
 
 Coments starts with `//`
 
-``` bash
+``` nasm
 // This is a comment
 hlt  // Side comments can be used too
 ```
