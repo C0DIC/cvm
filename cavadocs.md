@@ -110,7 +110,7 @@ wrt i64       // Prints 56
 ### wrtn
 
 Print the element above with new line
-Throws an error when it's noting to print or stack is empty
+Throws an error when sit's noting to print or stack is empty
 
 ```text
 wrt (str | i64 | f64)
