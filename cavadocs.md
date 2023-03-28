@@ -152,7 +152,7 @@ push 45   // Instruction #1
 
 ### dup
 
-Duplicate an element by its index in stack.
+Duplicate an element by the "step" from instruction
 
 - Elements counting starts with __0__
 
@@ -165,10 +165,11 @@ dup (int)
 Example:
 
 ``` nasm
-push 90
-push 45
+push 90   // dup 1
+push 45   // dup 0
 
-dup 1   // Duplicating 45. Stack size is 3 now
+// 1 is showing `step` from current pos in stack
+dup 1   // Duplicating 90. Stack size is 3 now
 ```
 
 ### swp

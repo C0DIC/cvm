@@ -58,6 +58,7 @@ CataError parse_insts(CataStr source, CataVM *cvm) {
     size_t  line_count   = 1;
 
     CataStr cp_source = source;
+    Token tok_list[18]; createTokenList(tok_list);
 
     while (cp_source.length != 0) {
         line   = castr_ltrim(' ', castr_untilc('\n', cp_source));
@@ -132,105 +133,80 @@ CataError parse_insts(CataStr source, CataVM *cvm) {
         }
 
         if (token.length != 0) {
-
-            if (castr_same(token, CS("push"))) {
-                cvm->instr_stack[cvm->instr_stack_size].instr = token;
-
-                if (arg.length == 0) {
-                    fprintf(stderr,
-                            "%s:\n  |___%s: %lu: %s `"CS_PRI"`\n",
-                            cvm->filename, cvm_err_to_cstr(ERR_NO_ARGUMENT), 
-                            line_count, "excepted value after", CS_FMT(token)
-                    );
-                    return ERR_NO_ARGUMENT;
-                }
-
-                if (castr_startswith("\"", arg)) {
-                    arg = castr_cut_by(1, arg);
-                    cvm->instr_stack[cvm->instr_stack_size].arg.as_string   = castr_untilc('"', arg);
-                } else {
-                    cvm->instr_stack[cvm->instr_stack_size].arg   = makeObject(arg);
-                }
-
-                cvm->instr_stack[cvm->instr_stack_size].line   = line_count;
-                cvm->instr_stack_size += 1;
-            } else if (
-                castr_same(token, CS("if"))     ||
-                castr_same(token, CS("ifnt"))   ||
-                castr_same(token, CS("dup"))    ||
-                castr_same(token, CS("cmp"))    ||
-                castr_same(token, CS("wrt"))    ||
-                castr_same(token, CS("wrtn"))   ||
-                castr_same(token, CS("swp"))
-                ) {
-                cvm->instr_stack[cvm->instr_stack_size].instr = token;
-
-                if (arg.length == 0) {
-                    fprintf(stderr,
-                            "%s:\n  |___%s: %lu: %s `"CS_PRI"`\n",
-                            cvm->filename, cvm_err_to_cstr(ERR_NO_ARGUMENT), 
-                            line_count, "excepted value after", CS_FMT(token)
-                    );
-                    return ERR_NO_ARGUMENT;
-                }
-
-                cvm->instr_stack[cvm->instr_stack_size].arg   = makeObject(arg);
-                cvm->instr_stack[cvm->instr_stack_size].line   = line_count;
-                cvm->instr_stack_size += 1;
-            } else if (castr_same(token, CS("goto"))) {
-                cvm->instr_stack[cvm->instr_stack_size].instr = token;
-
-                if (isalpha(arg.data[0])) {
-                    if (label_exist(cvm, arg)) {
-                        cvm->instr_stack[cvm->instr_stack_size].arg.as_int = label_indx(cvm, arg);
-                        cvm->instr_stack[cvm->instr_stack_size].line       = line_count;
-                        cvm->instr_stack_size += 1;
-                    } else {
-                        fprintf(stderr,
-                            "%s:\n  |___%s: %lu: %s `"CS_PRI"`\n",
-                            cvm->filename, cvm_err_to_cstr(ERR_UNKNOWN_LABEL), line_count,
-                            "unknown label", CS_FMT(arg)
-                        );
-
-                        return ERR_UNKNOWN_LABEL;
-                    }
-                } else {
-                    cvm->instr_stack[cvm->instr_stack_size].arg   = makeObject(arg);
-                    cvm->instr_stack[cvm->instr_stack_size].line   = line_count;
-                    cvm->instr_stack_size += 1;
-                }
-            } else if (
-                    castr_same(token, CS("add"))    ||
-                    castr_same(token, CS("sub"))    ||
-                    castr_same(token, CS("mult"))   ||
-                    castr_same(token, CS("div"))    ||
-                    castr_same(token, CS("mod"))    ||
-                    castr_same(token, CS("hlt"))    ||
-                    castr_same(token, CS("scn"))    ||
-                    castr_same(token, CS("inc"))    ||
-                    castr_same(token, CS("dec"))    ||
-                    castr_same(token, CS("pop"))    ||
-                    castr_same(token, CS("dmp"))
-                    )
-                {
-
-                cvm->instr_stack[cvm->instr_stack_size].instr = token;
-                cvm->instr_stack[cvm->instr_stack_size].arg    = makeObject(arg);
-                cvm->instr_stack[cvm->instr_stack_size].line   = line_count;
-                cvm->instr_stack_size += 1;
-            } else if (castr_endswith(":", token)) {
-                cvm->instr_stack[cvm->instr_stack_size].instr     = token;
-                cvm->instr_stack[cvm->instr_stack_size].arg         = makeObject(arg);
-                cvm->instr_stack[cvm->instr_stack_size].line        = line_count;
+            if (castr_endswith(":", token)) {
+                cvm->instr_stack[cvm->instr_stack_size].instr   = token;
+                cvm->instr_stack[cvm->instr_stack_size].arg     = makeEmptyObject();
+                cvm->instr_stack[cvm->instr_stack_size].line    = line_count;
                 cvm->instr_stack_size += 1;
             } else {
-                fprintf(stderr,
-                    "%s:\n  |___%s: %lu: %s `"CS_PRI"`\n",
-                    cvm->filename, cvm_err_to_cstr(ERR_NAME_ERROR), line_count,
-                    "unknown name", CS_FMT(token)
-                );
+                for (size_t i = 0; i < TOKEN_COUNT; i++) {
 
-                return ERR_NAME_ERROR;
+                    if (castr_same(token, tok_list[i].value)) {
+                        cvm->instr_stack[cvm->instr_stack_size].instr = token;
+
+                        if (tok_list[i].is_arg) {
+                            if (arg.length == 0) {
+                                fprintf(stderr,
+                                        "%s:\n  |___%s: %lu: %s `"CS_PRI"`\n",
+                                        cvm->filename, cvm_err_to_cstr(ERR_NO_ARGUMENT), 
+                                        line_count, "excepted value after", CS_FMT(token)
+                                );
+                                return ERR_NO_ARGUMENT;
+                            }
+
+                            if (castr_same(token, CS("goto"))){
+                                cvm->instr_stack[cvm->instr_stack_size].instr = token;
+
+                                if (isalpha(arg.data[0])) {
+                                    if (label_exist(cvm, arg)) {
+                                        cvm->instr_stack[cvm->instr_stack_size].arg.as_int = label_indx(cvm, arg);
+                                        cvm->instr_stack[cvm->instr_stack_size].line       = line_count;
+                                        cvm->instr_stack_size += 1;
+                                        continue;
+                                    } else {
+                                        fprintf(stderr,
+                                            "%s:\n  |___%s: %lu: %s `"CS_PRI"`\n",
+                                            cvm->filename, cvm_err_to_cstr(ERR_UNKNOWN_LABEL), line_count,
+                                            "unknown label", CS_FMT(arg)
+                                        );
+
+                                        return ERR_UNKNOWN_LABEL;
+                                    }
+                                } else {
+                                    cvm->instr_stack[cvm->instr_stack_size].arg   = makeObject(arg);
+                                    cvm->instr_stack[cvm->instr_stack_size].line   = line_count;
+                                    cvm->instr_stack_size += 1;
+                                    continue;
+                                }
+                            }
+
+                            if (castr_startswith("\"", arg)) {
+                                arg = castr_cut_by(1, arg);
+                                cvm->instr_stack[cvm->instr_stack_size].arg.as_string   = castr_untilc('"', arg);
+                            } else {
+                                cvm->instr_stack[cvm->instr_stack_size].arg   = makeObject(arg);
+                            }
+
+                        } else {
+                            cvm->instr_stack[cvm->instr_stack_size].arg = makeObject(arg);
+                        }
+
+                        cvm->instr_stack[cvm->instr_stack_size].line   = line_count;
+                        cvm->instr_stack_size += 1;
+                    } else {
+                        if (i < TOKEN_COUNT) {
+                            continue;
+                        } else {
+                            fprintf(stderr,
+                                "%s:\n  |___%s: %lu: %s `"CS_PRI"`\n",
+                                cvm->filename, cvm_err_to_cstr(ERR_NAME_ERROR), line_count,
+                                "unknown name", CS_FMT(token)
+                            );
+
+                            return ERR_NAME_ERROR;
+                        }
+                    }
+                }
             }
         }
         
@@ -238,6 +214,7 @@ CataError parse_insts(CataStr source, CataVM *cvm) {
             else source = castr_cutc('\n', source);
 
         line_count += 1;
+        
     }
 
     return CATA_OK;
