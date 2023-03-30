@@ -91,7 +91,8 @@ void createTokenList(Token *token_list) {
     token_list[14] = createToken(CS("scn"), false);
     token_list[15] = createToken(CS("inc"), false);
     token_list[16] = createToken(CS("dec"), false);
-    token_list[17] = createToken(CS("pop"), false);
+    token_list[17] = createToken(CS("dmp"), false);
+    token_list[18] = createToken(CS("pop"), false);
 }
 
 #endif

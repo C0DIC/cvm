@@ -12,7 +12,7 @@ main:
     swp 2          // Swap "*" to i
 
     ifnt 15
-        goto loop  // Print block
+        goto loop
     hlt
 
 loop:     // i here
@@ -22,7 +22,6 @@ loop:     // i here
 
     cmp 0
         goto continue
-
     goto print
     
     continue:   // k here
