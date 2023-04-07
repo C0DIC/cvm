@@ -1,0 +1,32 @@
+    goto main
+
+max:
+    dup 1
+    dup 1
+    >
+
+    if 1
+        goto swap
+    goto noswap
+
+swap:
+    pop
+    swp 0
+    goto exit
+
+noswap:
+    pop
+    goto exit
+
+main:
+    scn
+    scn
+    goto max
+
+exit:
+    push "Max: "
+    wrt str
+    pop
+
+    wrtn i64
+    hlt
