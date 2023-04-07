@@ -1,2 +1,2 @@
-push 1  // Pushing 1 to the stack
+push 1      // Pushing 1 to the stack
 wrtn i64    // Print 1

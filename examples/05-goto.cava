@@ -1,8 +1,13 @@
-push 15   // Pushing 15 to the stack          <- Instruction #0
-push 15   // Pushing 15 to the stack          <- Instruction #1
+// goto also can go to labels as well
 
-goto exit    // Skiping wrt instruction (instructions count starts with 0)  <- Instruction #2
-wrtn i64      // <- Instruction #3
+goto main
 
-exit:
-    hlt       // <- Instruction #4
+exit:       // Block creation
+    hlt
+
+main:
+    push 15     // Pushing 15 to the stack
+    push 15     // Pushing 15 to the stack
+
+    goto exit   // Skiping wrt instruction to exit block
+    wrtn i64        // Never executed

@@ -4,5 +4,5 @@ wrtn i64        // Print it
 push 10     // Pushing 10 to the stack     <- Stack[1]    = 10
 wrtn i64         // Print it
 
-dup  0      // Duplicate element of the stack by absolute addr (index in stack)
+dup  0          // Duplicate element of the stack by absolute addr (index in stack)
 wrtn i64        // Print it

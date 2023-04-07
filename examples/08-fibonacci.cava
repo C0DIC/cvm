@@ -1,18 +1,23 @@
 // Fibonacci numbers to 10946
 
 main:
-    push 10946   // Pushing limit number 
-    push 0       // Fisrt number
+    push 10946   // Limiting iterations
+
+    push 0       // First number
+    wrtn i64
+
     push 1       // Second number
+    wrtn i64
 
     loop:
-        dup  1       // Duplicate
-        dup  1       // Duplicate
+        dup 1   // Duplicate
+        dup 1   // Duplicate
 
-        add          // Sum it up
-        wrtn i64          // Print
 
-        cmp 0        // Compare last number with limit (first line of main)
+        add       // Sum
+        wrtn i64  // Print
+
+        cmp 0     // Compare last number with limit
             hlt
 
-    goto loop       // Repeat
+    goto loop     // Repeat
