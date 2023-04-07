@@ -76,6 +76,8 @@ int main(int argc, char **argv) {
             in_filename  = lazy_filename(input_file_path);
         } 
 
+        arg = get_arg(&argc, &argv);
+
         if (!strcmp(arg, "-o")) {
             if (argc != 0) {
                 ouput_file_path = get_arg(&argc, &argv);
@@ -88,10 +90,11 @@ int main(int argc, char **argv) {
                 fprintf(stderr, "<error>: no output file provided after `-o` flag\n");
                 exit(1);
             }
-        }
-
-        if (!strcmp(arg, "-r")) {
+        } else if (!strcmp(arg, "-r")) {
             run = 1;
+        } else {
+            fprintf(stderr, "<error>: unknown flag `%s`\n", arg);
+            exit(1);
         }
     }
 
@@ -108,7 +111,7 @@ int main(int argc, char **argv) {
     CataError exec_prog = parse_insts(CS(cava_source), &CVM);
 
     if (exec_prog == CATA_OK) {
-        if (ouput_file_path) {
+        if (!ouput_file_path) {
             assert(0 && "<error>: not implemented yet");
         }
         else {

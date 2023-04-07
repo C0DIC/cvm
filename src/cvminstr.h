@@ -14,13 +14,13 @@
 #ifndef CVM_INSTRUCTION_H
 #define CVM_INSTRUCTION_H
 
-#define TOKEN_COUNT 19
+#define TOKEN_COUNT 22
 
 #include <stdlib.h>
 #include <stdint.h>
 #include "../catastring/catastring.h"
 
-typedef struct {
+typedef union {
     int64_t  as_int;
     double   as_float;
     CataStr  as_string;
@@ -44,7 +44,7 @@ typedef struct {
 
 
 Object makeEmptyObject();
-Object makeObject(const CataStr obj);
+Object makeObject(const CataStr obj, const char *type);
 
 Token createToken(CataStr value, bool is_arg);
 void createTokenList(Token *token_list);
@@ -53,17 +53,14 @@ void createTokenList(Token *token_list);
 
 #ifdef CVM_INSTR
 
-Object makeObject(const CataStr obj) {
-    return (Object) {
-        .as_int = castr_to_lld(obj),
-        .as_float = atof(obj.data),
-        .as_string = obj
-    };
+Object makeObject(const CataStr obj, const char *type) {
+    if      (!strcmp("i64", type)) return (Object) {.as_int = castr_to_lld(obj)};
+    else if (!strcmp("f64", type)) return (Object) {.as_float = atof(obj.data)};
+    else if (!strcmp("str", type)) return (Object) {.as_string = obj};
+    else return (Object) {0};
 }
 
-Object makeEmptyObject() {
-    return (Object) {0};
-}
+Object makeEmptyObject() { return (Object) {0};}
 
 Token createToken(CataStr value, bool is_arg) {
     return (Token) {
@@ -93,6 +90,12 @@ void createTokenList(Token *token_list) {
     token_list[16] = createToken(CS("dec"), false);
     token_list[17] = createToken(CS("dmp"), false);
     token_list[18] = createToken(CS("pop"), false);
+
+    token_list[19] = createToken(CS("=="), false);
+    token_list[22] = createToken(CS("<="), false);
+    token_list[23] = createToken(CS(">="), false);
+    token_list[20] = createToken(CS("<"), false);
+    token_list[21] = createToken(CS(">"), false);
 }
 
 #endif

@@ -20,7 +20,7 @@
     #include "cvminstr.h"
 #endif
 
-#define STACK_SIZE 2048
+#define STACK_SIZE 4096
 
 // Cata Virtual Machine structure
 typedef struct CataVirtualMachine {

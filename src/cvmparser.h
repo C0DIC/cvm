@@ -65,6 +65,7 @@ CataError parse_insts(CataStr source, CataVM *cvm) {
     CataStr token        = {0};
     CataStr arg          = {0};
     size_t  line_count   = 1;
+    bool    is_str       = false;
 
     CataStr cp_source = source;
     Token tok_list[TOKEN_COUNT]; createTokenList(tok_list);
@@ -117,6 +118,7 @@ CataError parse_insts(CataStr source, CataVM *cvm) {
             if (castr_has('"', line)) {
                 arg = castr_untilc('"', line);
                 line = castr_cut_by(1, line);
+                is_str = true;
             } else {
                 cvm_error(
                     cvm->filename, cvm->instr_stack[cvm->instr_pos].line,
@@ -164,34 +166,29 @@ CataError parse_insts(CataStr source, CataVM *cvm) {
                         }
 
                         if (castr_same(token, CS("goto"))) {
-
-                            if (isalpha(arg.data[0])) {
+                            if (!is_str && !isdigit(arg.data[0])) {
                                 if (label_exist(cvm, arg)) {
                                     cvm->instr_stack[cvm->instr_stack_size].arg.as_int = label_indx(cvm, arg);
-                                    cvm->instr_stack[cvm->instr_stack_size].line       = line_count;
                                 } else {
                                     fprintf(stderr,
-                                        "%s:\n  |___%s: %lu: %s `"CS_PRI"`\n",
-                                        cvm->filename, cvm_err_to_cstr(ERR_UNKNOWN_LABEL), line_count,
-                                        "unknown label", CS_FMT(arg)
+                                            "%s:\n  |___%s: %lu: %s `"CS_PRI"`\n",
+                                            cvm->filename, cvm_err_to_cstr(ERR_UNKNOWN_LABEL), line_count,
+                                            "unknown label", CS_FMT(arg)
                                     );
 
                                     return ERR_UNKNOWN_LABEL;
                                 }
                             } else {
-                                cvm->instr_stack[cvm->instr_stack_size].arg    = makeObject(arg);
-                                cvm->instr_stack[cvm->instr_stack_size].line   = line_count;
+                                cvm->instr_stack[cvm->instr_stack_size].arg = makeObject(arg, "i64");
                             }
-
-                            cvm->instr_stack_size += 1;
+                        } else {
+                            if (is_str || isalpha(arg.data[0])) {
+                                cvm->instr_stack[cvm->instr_stack_size].arg = makeObject(arg, "str");
+                            } else {
+                                if (castr_has('.', arg)) cvm->instr_stack[cvm->instr_stack_size].arg = makeObject(arg, "f64");
+                                else cvm->instr_stack[cvm->instr_stack_size].arg = makeObject(arg, "i64");
+                            }
                         }
-
-                        if (castr_startswith("\"", arg)) {
-                            arg = castr_cut_by(1, arg);
-                            cvm->instr_stack[cvm->instr_stack_size].arg.as_string   = castr_untilc('"', arg);
-                        } else cvm->instr_stack[cvm->instr_stack_size].arg   = makeObject(arg);
-                    } else {
-                        cvm->instr_stack[cvm->instr_stack_size].arg = makeEmptyObject();
                     }
 
                     cvm->instr_stack[cvm->instr_stack_size].line   = line_count;
@@ -211,7 +208,8 @@ CataError parse_insts(CataStr source, CataVM *cvm) {
         if (!castr_has('\n', source)) source = CS("");
             else source = castr_cutc('\n', source);
 
-        line_count += 1;        
+        line_count += 1;       
+        is_str = false;
     }
 
     return CATA_OK;

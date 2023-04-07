@@ -39,7 +39,6 @@ CataError cvm_execute(CataVM *cvm);
 
 CataError cvm_execute(CataVM *cvm) {
     while (cvm->instr_pos != cvm->instr_stack_size && !cvm->halted) {
-
         CataStr instr = cvm->instr_stack[cvm->instr_pos].instr;
         Object  arg   = cvm->instr_stack[cvm->instr_pos].arg;
 
@@ -69,7 +68,6 @@ CataError cvm_execute(CataVM *cvm) {
                 }
 
                 cvm->stack[cvm->stack_size - 2].as_int += cvm->stack[cvm->stack_size - 1].as_int;
-                cvm->stack[cvm->stack_size - 2].as_float += cvm->stack[cvm->stack_size - 1].as_float;
                 cvm->stack_size -= 1;
                 cvm->instr_pos += 1;
             } else if (castr_same(instr, CS("sub"))) {
@@ -90,7 +88,6 @@ CataError cvm_execute(CataVM *cvm) {
                 }
 
                 cvm->stack[cvm->stack_size - 2].as_int *= cvm->stack[cvm->stack_size - 1].as_int;
-                cvm->stack[cvm->stack_size - 2].as_float *= cvm->stack[cvm->stack_size - 1].as_float;
                 cvm->stack_size -= 1;
                 cvm->instr_pos += 1;
             } else if (castr_same(instr, CS("div"))) {
@@ -108,7 +105,6 @@ CataError cvm_execute(CataVM *cvm) {
                 }
 
                 cvm->stack[cvm->stack_size - 2].as_int /= cvm->stack[cvm->stack_size - 1].as_int;
-                cvm->stack[cvm->stack_size - 2].as_float /= cvm->stack[cvm->stack_size - 1].as_float;
                 cvm->stack_size -= 1;
                 cvm->instr_pos += 1;
             } else if (castr_same(instr, CS("mod"))) {
@@ -126,7 +122,6 @@ CataError cvm_execute(CataVM *cvm) {
                 }
 
                 cvm->stack[cvm->stack_size - 2].as_int %= cvm->stack[cvm->stack_size - 1].as_int;
-                cvm->stack[cvm->stack_size - 2].as_float = cvm->stack[cvm->stack_size - 2].as_int / 1.0;
                 cvm->stack_size -= 1;
                 cvm->instr_pos += 1;
             } else if (castr_same(instr, CS("inc"))) {
@@ -136,8 +131,7 @@ CataError cvm_execute(CataVM *cvm) {
                     return ERR_STACK_UNDERFLOW;
                 }
 
-                cvm->stack[cvm->stack_size - 1].as_int   += 1;
-                cvm->stack[cvm->stack_size - 1].as_float += 1.0;
+                cvm->stack[cvm->stack_size - 1].as_int++;
                 cvm->instr_pos += 1;
             } else if (castr_same(instr, CS("dec"))) {
                 if (cvm->stack_size < 1) {
@@ -146,8 +140,7 @@ CataError cvm_execute(CataVM *cvm) {
                     return ERR_STACK_UNDERFLOW;
                 }
 
-                cvm->stack[cvm->stack_size - 1].as_int   -= 1;
-                cvm->stack[cvm->stack_size - 1].as_float -= 1.0;
+                cvm->stack[cvm->stack_size - 1].as_int--;
                 cvm->instr_pos += 1;
             } else if (castr_same(instr, CS("pop"))) {
                 if (cvm->stack_size < 1) {
@@ -179,8 +172,9 @@ CataError cvm_execute(CataVM *cvm) {
                 cvm->instr_pos += 1;
             } else if (castr_same(instr, CS("goto"))) {
                 for (size_t i = 0; i < cvm->instr_stack_size; i++) {
-                    if (cvm->instr_stack[i].line == arg.as_int)
+                    if (cvm->instr_stack[i].line == arg.as_int)  {
                         cvm->instr_pos = i;
+                    }
                 }
             } else if (castr_same(instr, CS("if"))) {
                 if (cvm->stack[cvm->stack_size - 1].as_int == arg.as_int) {
@@ -275,6 +269,71 @@ CataError cvm_execute(CataVM *cvm) {
 
                 cvm->stack[cvm->stack_size - 1] = cvm->stack[arg.as_int];
                 cvm->stack[arg.as_int] = temp;
+                cvm->instr_pos  += 1;
+            } else if (castr_same(instr, CS("=="))) {
+                if (cvm->stack_size < 2) {
+                    cvm_error(cvm->filename, cvm->instr_stack[cvm->instr_pos].line,
+                            ERR_STACK_UNDERFLOW, "stack underflow");
+                    return ERR_STACK_UNDERFLOW;
+                }
+
+                if (cvm->stack[cvm->stack_size - 2].as_int == cvm->stack[cvm->stack_size - 1].as_int)
+                    cvm->stack[cvm->stack_size - 2].as_int = 1;
+                else cvm->stack[cvm->stack_size - 2].as_int = 0;
+
+                cvm->stack_size -= 1;
+                cvm->instr_pos  += 1;
+            } else if (castr_same(instr, CS("<"))) {
+                if (cvm->stack_size < 2) {
+                    cvm_error(cvm->filename, cvm->instr_stack[cvm->instr_pos].line,
+                            ERR_STACK_UNDERFLOW, "stack underflow");
+                    return ERR_STACK_UNDERFLOW;
+                }
+
+                if (cvm->stack[cvm->stack_size - 2].as_int < cvm->stack[cvm->stack_size - 1].as_int)
+                    cvm->stack[cvm->stack_size - 2].as_int = 1;
+                else cvm->stack[cvm->stack_size - 2].as_int = 0;
+
+                cvm->stack_size -= 1;
+                cvm->instr_pos  += 1;
+            } else if (castr_same(instr, CS(">"))) {
+                if (cvm->stack_size < 2) {
+                    cvm_error(cvm->filename, cvm->instr_stack[cvm->instr_pos].line,
+                            ERR_STACK_UNDERFLOW, "stack underflow");
+                    return ERR_STACK_UNDERFLOW;
+                }
+
+                if (cvm->stack[cvm->stack_size - 2].as_int > cvm->stack[cvm->stack_size - 1].as_int)
+                    cvm->stack[cvm->stack_size - 2].as_int = 1;
+                else cvm->stack[cvm->stack_size - 2].as_int = 0;
+
+                cvm->stack_size -= 1;
+                cvm->instr_pos  += 1;
+            } else if (castr_same(instr, CS("<="))) {
+                if (cvm->stack_size < 2) {
+                    cvm_error(cvm->filename, cvm->instr_stack[cvm->instr_pos].line,
+                            ERR_STACK_UNDERFLOW, "stack underflow");
+                    return ERR_STACK_UNDERFLOW;
+                }
+
+                if (cvm->stack[cvm->stack_size - 2].as_int <= cvm->stack[cvm->stack_size - 1].as_int)
+                    cvm->stack[cvm->stack_size - 2].as_int = 1;
+                else cvm->stack[cvm->stack_size - 2].as_int = 0;
+
+                cvm->stack_size -= 1;
+                cvm->instr_pos  += 1;
+            } else if (castr_same(instr, CS(">="))) {
+                if (cvm->stack_size < 2) {
+                    cvm_error(cvm->filename, cvm->instr_stack[cvm->instr_pos].line,
+                            ERR_STACK_UNDERFLOW, "stack underflow");
+                    return ERR_STACK_UNDERFLOW;
+                }
+
+                if (cvm->stack[cvm->stack_size - 2].as_int >= cvm->stack[cvm->stack_size - 1].as_int)
+                    cvm->stack[cvm->stack_size - 2].as_int = 1;
+                else cvm->stack[cvm->stack_size - 2].as_int = 0;
+
+                cvm->stack_size -= 1;
                 cvm->instr_pos  += 1;
             } else {
                 fprintf(stderr,

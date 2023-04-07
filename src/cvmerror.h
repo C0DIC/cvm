@@ -31,7 +31,7 @@ typedef enum {
 } CataError;
 
 char *cvm_err_to_cstr(CataError error);
-CataError cvm_error(const char *filename, size_t line_cnt, CataError error, char *text);
+void cvm_error(const char *filename, size_t line_cnt, CataError error, char *text);
 
 #endif
 
@@ -54,7 +54,7 @@ char *cvm_err_to_cstr(CataError error) {
     }
 }
 
-CataError cvm_error(const char *filename, size_t line_cnt, CataError error, char *text) {
+void cvm_error(const char *filename, size_t line_cnt, CataError error, char *text) {
     fprintf(stderr,
             "%s:\n  |___%s: %lu: %s\n",
             filename, cvm_err_to_cstr(error), line_cnt,
