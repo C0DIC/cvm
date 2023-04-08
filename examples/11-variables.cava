@@ -1,0 +1,8 @@
+// You can create variables by adding . before name of it
+
+.hello "hello "
+.second_part "from cava"
+
+// You can access it by putting $ before it
+wrt $hello
+wrtn $second_part
