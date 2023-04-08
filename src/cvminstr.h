@@ -42,6 +42,12 @@ typedef struct {
     bool      is_arg;
 } Token;
 
+typedef struct {
+    size_t     ptr;
+    CataStr    name;
+    CataStr    type;
+    Object     value;
+} Variable;
 
 Object makeEmptyObject();
 Object makeObject(const CataStr obj, const char *type);

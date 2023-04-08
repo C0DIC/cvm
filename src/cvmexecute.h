@@ -37,6 +37,33 @@ CataError cvm_execute(CataVM *cvm);
 
 #ifdef CVM_EXECUTE
 
+static bool var_exist(CataVM *cvm, CataStr name) {
+    for (size_t pos = 0; pos < cvm->variables_stack_size; pos++) {
+        if (castr_same(name, cvm->variables_stack[pos].name)) {
+            return true;
+        }
+    }
+
+    return false;
+};
+
+static int var_ptr(CataVM *cvm, CataStr name) {
+    if (var_exist(cvm, name)) {
+        for (size_t pos = 0; pos < cvm->variables_stack_size; pos++) {
+            if (castr_same(name, cvm->variables_stack[pos].name)) return pos;
+        }
+    }
+
+    return -1;
+}
+
+static CataStr var_get_type(CataVM *cvm, CataStr name) {
+    if (var_exist(cvm, name)) return cvm->variables_stack[var_ptr(cvm, name)].type;
+
+    return CS("");
+};
+
+
 CataError cvm_execute(CataVM *cvm) {
     while (cvm->instr_pos != cvm->instr_stack_size && !cvm->halted) {
         CataStr instr = cvm->instr_stack[cvm->instr_pos].instr;
@@ -217,6 +244,25 @@ CataError cvm_execute(CataVM *cvm) {
                     printf("%lf", cvm->stack[cvm->stack_size - 1].as_float);
                 } else if (castr_same(CS("str"), arg.as_string)) {
                     printf(CS_PRI"", CS_FMT(cvm->stack[cvm->stack_size - 1].as_string));
+                } else if (castr_startswith("$", arg.as_string)) {
+                    arg.as_string = castr_cut_by(1, arg.as_string);
+                    if (var_exist(cvm, arg.as_string)) {
+                        if (castr_same(CS("str"), var_get_type(cvm, arg.as_string))) {
+                            printf(CS_PRI"", CS_FMT(cvm->variables_stack[var_ptr(cvm, arg.as_string)].value.as_string));
+                        } else if (castr_same(CS("i64"), var_get_type(cvm, arg.as_string))) {
+                            printf("%ld", cvm->variables_stack[var_ptr(cvm, arg.as_string)].value.as_int);
+                        } else if (castr_same(CS("f64"), var_get_type(cvm, arg.as_string))) {
+                            printf("%lf", cvm->variables_stack[var_ptr(cvm, arg.as_string)].value.as_float);
+                        }
+                    } else {
+                        fprintf(stderr,
+                            "%s:\n  |___%s: %lu: %s `"CS_PRI"`\n",
+                            cvm->filename, cvm_err_to_cstr(ERR_UNKNOWN_VARIABLE), cvm->instr_stack[cvm->instr_pos].line,
+                            "unknown variable", CS_FMT(arg.as_string)
+                        );
+
+                        return ERR_UNKNOWN_VARIABLE;
+                    }
                 } else {
                     fprintf(stderr,
                         "%s:\n  |___%s: %lu: %s `"CS_PRI"`\n",
@@ -235,6 +281,25 @@ CataError cvm_execute(CataVM *cvm) {
                     printf("%lf\n", cvm->stack[cvm->stack_size - 1].as_float);
                 } else if (castr_same(CS("str"), arg.as_string)) {
                     printf(CS_PRI"\n", CS_FMT(cvm->stack[cvm->stack_size - 1].as_string));
+                } else if (castr_startswith("$", arg.as_string)) {
+                    arg.as_string = castr_cut_by(1, arg.as_string);
+                    if (var_exist(cvm, arg.as_string)) {
+                        if (castr_same(CS("str"), var_get_type(cvm, arg.as_string))) {
+                            printf(CS_PRI"\n", CS_FMT(cvm->variables_stack[var_ptr(cvm, arg.as_string)].value.as_string));
+                        } else if (castr_same(CS("i64"), var_get_type(cvm, arg.as_string))) {
+                            printf("%ld\n", cvm->variables_stack[var_ptr(cvm, arg.as_string)].value.as_int);
+                        } else if (castr_same(CS("f64"), var_get_type(cvm, arg.as_string))) {
+                            printf("%lf\n", cvm->variables_stack[var_ptr(cvm, arg.as_string)].value.as_float);
+                        }
+                    } else {
+                        fprintf(stderr,
+                            "%s:\n  |___%s: %lu: %s `"CS_PRI"`\n",
+                            cvm->filename, cvm_err_to_cstr(ERR_UNKNOWN_VARIABLE), cvm->instr_stack[cvm->instr_pos].line,
+                            "unknown variable", CS_FMT(arg.as_string)
+                        );
+
+                        return ERR_UNKNOWN_VARIABLE;
+                    }
                 } else {
                     fprintf(stderr,
                         "%s:\n  |___%s: %lu: %s `"CS_PRI"`\n",
@@ -247,6 +312,8 @@ CataError cvm_execute(CataVM *cvm) {
 
                 cvm->instr_pos  += 1;
             } else if (castr_endswith(":", instr)) {
+                cvm->instr_pos  += 1;
+            } else if (castr_startswith(".", instr)) {
                 cvm->instr_pos  += 1;
             } else if (castr_same(instr, CS("scn"))) {
                 if (cvm->stack_size >= STACK_SIZE) {

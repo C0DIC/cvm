@@ -34,6 +34,9 @@ typedef struct CataVirtualMachine {
     CVMLabel labels_stack[STACK_SIZE];
     size_t   labels_stack_size;
 
+    Variable variables_stack[STACK_SIZE];
+    size_t   variables_stack_size;
+
     __u_short halted;
 
     const char *filename;

@@ -26,13 +26,11 @@
 
 CataError parse_insts(CataStr source, CataVM *cvm);
 
-bool label_exist(CataVM *cvm, CataStr label);
-
 #endif
 
 #ifdef CVM_PARSER
 
-bool label_exist(CataVM *cvm, CataStr label) {
+static bool label_exist(CataVM *cvm, CataStr label) {
     for (size_t pos = 0; pos < cvm->labels_stack_size; pos++) {
         if (castr_same(label, castr_untilc(':', cvm->labels_stack[pos].instr))) {
             return true;
@@ -42,7 +40,7 @@ bool label_exist(CataVM *cvm, CataStr label) {
     return false;
 }
 
-size_t label_indx(CataVM *cvm, CataStr label) {
+static size_t label_indx(CataVM *cvm, CataStr label) {
     for (size_t pos = 0; pos < cvm->labels_stack_size; pos++)
         if (castr_same(castr_untilc(':', cvm->labels_stack[pos].instr), label)) {
             return cvm->labels_stack[pos].line;
@@ -51,7 +49,7 @@ size_t label_indx(CataVM *cvm, CataStr label) {
     return -1;
 }
 
-size_t token_exist(CataStr token, Token *tok_array) {
+static size_t token_exist(CataStr token, Token *tok_array) {
     for (size_t pos = 0; pos < TOKEN_COUNT; pos++) {
         if (castr_same(token, tok_array[pos].value))
             return pos;
@@ -149,7 +147,35 @@ CataError parse_insts(CataStr source, CataVM *cvm) {
                 cvm->instr_stack[cvm->instr_stack_size].arg     = makeEmptyObject();
                 cvm->instr_stack[cvm->instr_stack_size].line    = line_count;
                 cvm->instr_stack_size += 1;
-            } else {    
+            } else if (castr_startswith(".", token)) {
+                cvm->variables_stack[cvm->variables_stack_size].name   = castr_cut_by(1, token);
+                cvm->variables_stack[cvm->variables_stack_size].ptr    = cvm->variables_stack_size;
+
+                if (arg.length == 0) {
+                    fprintf(stderr,
+                                    "%s:\n  |___%s: %lu: %s `"CS_PRI"`\n",
+                                    cvm->filename, cvm_err_to_cstr(ERR_NO_ARGUMENT), 
+                                    line_count, "excepted value after", CS_FMT(token)
+                            );
+ 
+                    return ERR_NO_ARGUMENT;
+                } else {
+                    if (is_str) {
+                        cvm->variables_stack[cvm->variables_stack_size].value   = makeObject(arg, "str");
+                        cvm->variables_stack[cvm->variables_stack_size].type    = CS("str");
+                    } else {
+                        if (castr_has('.', arg)) {
+                            cvm->variables_stack[cvm->variables_stack_size].value = makeObject(arg, "f64");
+                            cvm->variables_stack[cvm->variables_stack_size].type    = CS("f64");  
+                        } else { 
+                            cvm->variables_stack[cvm->variables_stack_size].value = makeObject(arg, "i64");
+                             cvm->variables_stack[cvm->variables_stack_size].type = CS("i64");
+                        }
+                    }
+                }
+
+                cvm->variables_stack_size += 1;
+            } else {
                 size_t pos = token_exist(token, tok_list);
 
                 if (pos != -1) {
@@ -182,7 +208,7 @@ CataError parse_insts(CataStr source, CataVM *cvm) {
                                 cvm->instr_stack[cvm->instr_stack_size].arg = makeObject(arg, "i64");
                             }
                         } else {
-                            if (is_str || isalpha(arg.data[0])) {
+                            if (is_str || !isdigit(arg.data[0])) {
                                 cvm->instr_stack[cvm->instr_stack_size].arg = makeObject(arg, "str");
                             } else {
                                 if (castr_has('.', arg)) cvm->instr_stack[cvm->instr_stack_size].arg = makeObject(arg, "f64");
