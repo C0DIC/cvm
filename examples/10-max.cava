@@ -1,8 +1,6 @@
     goto main
 
 max:
-    dup 1
-    dup 1
     >
 
     if 1
