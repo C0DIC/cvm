@@ -278,10 +278,10 @@ CataError cvm_execute(CataVM *cvm) {
                 }
 
                 if (cvm->stack[cvm->stack_size - 2].as_int == cvm->stack[cvm->stack_size - 1].as_int)
-                    cvm->stack[cvm->stack_size - 2].as_int = 1;
-                else cvm->stack[cvm->stack_size - 2].as_int = 0;
+                    cvm->stack[cvm->stack_size].as_int = 1;
+                else cvm->stack[cvm->stack_size].as_int = 0;
 
-                cvm->stack_size -= 1;
+                cvm->stack_size += 1;
                 cvm->instr_pos  += 1;
             } else if (castr_same(instr, CS("<"))) {
                 if (cvm->stack_size < 2) {
@@ -291,10 +291,10 @@ CataError cvm_execute(CataVM *cvm) {
                 }
 
                 if (cvm->stack[cvm->stack_size - 2].as_int < cvm->stack[cvm->stack_size - 1].as_int)
-                    cvm->stack[cvm->stack_size - 2].as_int = 1;
-                else cvm->stack[cvm->stack_size - 2].as_int = 0;
+                    cvm->stack[cvm->stack_size].as_int = 1;
+                else cvm->stack[cvm->stack_size].as_int = 0;
 
-                cvm->stack_size -= 1;
+                cvm->stack_size += 1;
                 cvm->instr_pos  += 1;
             } else if (castr_same(instr, CS(">"))) {
                 if (cvm->stack_size < 2) {
@@ -304,10 +304,10 @@ CataError cvm_execute(CataVM *cvm) {
                 }
 
                 if (cvm->stack[cvm->stack_size - 2].as_int > cvm->stack[cvm->stack_size - 1].as_int)
-                    cvm->stack[cvm->stack_size - 2].as_int = 1;
-                else cvm->stack[cvm->stack_size - 2].as_int = 0;
+                    cvm->stack[cvm->stack_size].as_int = 1;
+                else cvm->stack[cvm->stack_size].as_int = 0;
 
-                cvm->stack_size -= 1;
+                cvm->stack_size += 1;
                 cvm->instr_pos  += 1;
             } else if (castr_same(instr, CS("<="))) {
                 if (cvm->stack_size < 2) {
@@ -317,10 +317,10 @@ CataError cvm_execute(CataVM *cvm) {
                 }
 
                 if (cvm->stack[cvm->stack_size - 2].as_int <= cvm->stack[cvm->stack_size - 1].as_int)
-                    cvm->stack[cvm->stack_size - 2].as_int = 1;
-                else cvm->stack[cvm->stack_size - 2].as_int = 0;
+                    cvm->stack[cvm->stack_size].as_int = 1;
+                else cvm->stack[cvm->stack_size].as_int = 0;
 
-                cvm->stack_size -= 1;
+                cvm->stack_size += 1;
                 cvm->instr_pos  += 1;
             } else if (castr_same(instr, CS(">="))) {
                 if (cvm->stack_size < 2) {
@@ -330,10 +330,10 @@ CataError cvm_execute(CataVM *cvm) {
                 }
 
                 if (cvm->stack[cvm->stack_size - 2].as_int >= cvm->stack[cvm->stack_size - 1].as_int)
-                    cvm->stack[cvm->stack_size - 2].as_int = 1;
-                else cvm->stack[cvm->stack_size - 2].as_int = 0;
+                    cvm->stack[cvm->stack_size].as_int = 1;
+                else cvm->stack[cvm->stack_size].as_int = 0;
 
-                cvm->stack_size -= 1;
+                cvm->stack_size += 1;
                 cvm->instr_pos  += 1;
             } else {
                 fprintf(stderr,
