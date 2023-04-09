@@ -1,54 +1,43 @@
-// Thats not the best solution, but it simple
-// because you get swap elements, interact with them and swaping back
-// so thier places never changed
+// New implementation of printing triangle of
+// symbols
 
-push 1     // j
-push 0     // k
-push 0     // i
-push " "
-push "*"
+.sym "*"
+.empty " "
+
+push 1    // j
+push 0    // k
+push 0    // i
 
 main:
-    swp 2          // Swap "*" to i
+    ifnt 15          // Lines count
+        goto loop    // Main loop
+    hlt              // Exit
 
-    ifnt 15
-        goto loop
-    hlt
-
-loop:     // i here
-    swp 2       // Swap i to "*"
-
-    swp 1       // Swap "*" to k
+loop:
+    swp 1    // Swap i to k
 
     cmp 0
         goto continue
     goto print
-    
-    continue:   // k here
-        pop         // Remove it
-        push 0      // Reset
 
-        swp 1       // Swap k to "*"
+    continue:
+        pop       // Remove k
+        push 0    // Pushing 0 as k
 
-        swp 0       // Swaping "*" to j
-        inc         // Increment it
-        swp 0       // Swaping j to "*"
+        swp 0     // Swap k to j
+        inc       // Increment it
+        swp 0     // Swap back
 
-        swp 2       // Swap "*" to i
-        inc         // Increment i
-        swp 2       // Swap again
+        swp 1     // Swap k to i
+        inc       // Increment
 
-        swp 3       // Swap "*" to " "
-        wrtn str
-        swp 3       // Swap back
+        wrtn $empty
 
-        goto main   // Return to main block
+        goto main
 
 print:
-    inc       // Increment k
-    swp 1     // Swaping k to "*"
+    inc    // Increment k
+    wrt $sym
 
-    wrt str   // Print it
-
-    swp 2     // Swaping to i
+    swp 1
     goto loop
