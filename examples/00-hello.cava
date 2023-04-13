@@ -1,2 +1,2 @@
-push "hello, world!"
+push "hello, world"
 wrtn str

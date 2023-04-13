@@ -1,0 +1,8 @@
+push 1000000
+
+wrtn i64
+push 1
+sub
+if 0
+    hlt
+goto 3      // Goto now works by lines. If it points to empty string, it stucks
