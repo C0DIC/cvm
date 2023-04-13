@@ -90,6 +90,20 @@ CataError cvm_execute(CataVM *cvm) {
                     cata_exit(execute_pop(cvm));
                 else if (castr_same(CS("scn"), cvm->instr_stack[cvm->instr_pos].instr))
                     cata_exit(execute_scn(cvm));
+                else if (castr_same(CS("dmp"), cvm->instr_stack[cvm->instr_pos].instr))
+                    cata_exit(execute_dmp(cvm));
+                else if (castr_same(CS("=="), cvm->instr_stack[cvm->instr_pos].instr))
+                    cata_exit(execute_eq(cvm));
+                else if (castr_same(CS("!="), cvm->instr_stack[cvm->instr_pos].instr))
+                    cata_exit(execute_noteq(cvm));
+                else if (castr_same(CS(">"), cvm->instr_stack[cvm->instr_pos].instr))
+                    cata_exit(execute_greater(cvm));
+                else if (castr_same(CS("<"), cvm->instr_stack[cvm->instr_pos].instr))
+                    cata_exit(execute_less(cvm));
+                else if (castr_same(CS(">="), cvm->instr_stack[cvm->instr_pos].instr))
+                    cata_exit(execute_greateq(cvm));
+                else if (castr_same(CS("<="), cvm->instr_stack[cvm->instr_pos].instr))
+                    cata_exit(execute_lesseq(cvm));
                 else if (castr_endswith  (":", cvm->instr_stack[cvm->instr_pos].instr) ||
                          castr_startswith(".", cvm->instr_stack[cvm->instr_pos].instr))
                                 cvm->instr_pos += 1;

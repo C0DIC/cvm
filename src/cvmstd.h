@@ -43,6 +43,17 @@ CataError execute_pop(CataVM *cvm);
 
 CataError execute_hlt(CataVM *cvm);
 
+CataError execute_scn(CataVM *cvm);
+
+CataError execute_dmp(CataVM *cvm);
+
+CataError execute_eq(CataVM *cvm);
+CataError execute_noteq(CataVM *cvm);
+CataError execute_greater(CataVM *cvm);
+CataError execute_less(CataVM *cvm);
+CataError execute_greateq(CataVM *cvm);
+CataError execute_lesseq(CataVM *cvm);
+
 #endif
 
 
@@ -444,5 +455,167 @@ CataError execute_scn(CataVM *cvm) {
 
     return CATA_OK;
 };
+
+CataError execute_dmp(CataVM *cvm) {
+
+    for (size_t pos = 0; pos < cvm->stack_size; ++pos)
+        printf("Stack: ['str',"CS_PRI"] | ['i64', %ld] | ['f64', %lf]\n",
+            CS_FMT(cvm->stack[pos].as_string),
+            cvm->stack[pos].as_int,
+            cvm->stack[pos].as_float
+        );
+
+    cvm->instr_pos  += 1;
+
+    return CATA_OK;
+};
+
+// Boolean operations
+
+// ==
+// 5
+// 5
+// ==
+// This is true
+CataError execute_eq(CataVM *cvm) {
+    if (cvm->stack_size < 2) {
+        cvm_error(
+            cvm->filename, cvm->instr_stack[cvm->instr_pos].line,
+            ERR_STACK_UNDERFLOW, "stack unferflow"
+        );
+        return ERR_STACK_UNDERFLOW;
+    }
+
+    if (cvm->stack[cvm->stack_size - 2].as_int == cvm->stack[cvm->stack_size - 1].as_int)
+        cvm->stack[cvm->stack_size++].as_int = 1;
+    else cvm->stack[cvm->stack_size++].as_int = 0;
+    
+    cvm->instr_pos  += 1;
+
+    return CATA_OK;
+};
+
+// != operation
+//
+// 1
+// 5
+// !=
+// This is true
+CataError execute_noteq(CataVM *cvm) {
+    if (cvm->stack_size < 2) {
+        cvm_error(
+            cvm->filename, cvm->instr_stack[cvm->instr_pos].line,
+            ERR_STACK_UNDERFLOW, "stack unferflow"
+        );
+        return ERR_STACK_UNDERFLOW;
+    }
+
+    if (cvm->stack[cvm->stack_size - 2].as_int != cvm->stack[cvm->stack_size - 1].as_int)
+        cvm->stack[cvm->stack_size++].as_int = 1;
+    else cvm->stack[cvm->stack_size++].as_int = 0;
+
+    cvm->instr_pos  += 1;
+
+    return CATA_OK;
+};
+
+// > operation
+//
+// 5
+// 1
+// >
+// This is true
+CataError execute_greater(CataVM *cvm) {
+    if (cvm->stack_size < 2) {
+        cvm_error(
+            cvm->filename, cvm->instr_stack[cvm->instr_pos].line,
+            ERR_STACK_UNDERFLOW, "stack unferflow"
+        );
+        return ERR_STACK_UNDERFLOW;
+    }
+
+    if (cvm->stack[cvm->stack_size - 2].as_int > cvm->stack[cvm->stack_size - 1].as_int)
+        cvm->stack[cvm->stack_size++].as_int = 1;
+    else cvm->stack[cvm->stack_size++].as_int = 0;
+
+    cvm->instr_pos  += 1;
+
+    return CATA_OK;
+};
+
+
+// < operation
+//
+// 1
+// 5
+// <
+// This is true
+CataError execute_less(CataVM *cvm) {
+    if (cvm->stack_size < 2) {
+        cvm_error(
+            cvm->filename, cvm->instr_stack[cvm->instr_pos].line,
+            ERR_STACK_UNDERFLOW, "stack unferflow"
+        );
+        return ERR_STACK_UNDERFLOW;
+    }
+
+    if (cvm->stack[cvm->stack_size - 2].as_int < cvm->stack[cvm->stack_size - 1].as_int)
+        cvm->stack[cvm->stack_size++].as_int = 1;
+    else cvm->stack[cvm->stack_size++].as_int = 0;
+
+    cvm->instr_pos  += 1;
+
+    return CATA_OK;
+};
+
+// <= operation
+//
+// 5       1
+// 5       5
+// <=      <=
+// Both is true
+CataError execute_lesseq(CataVM *cvm) {
+    if (cvm->stack_size < 2) {
+        cvm_error(
+            cvm->filename, cvm->instr_stack[cvm->instr_pos].line,
+            ERR_STACK_UNDERFLOW, "stack unferflow"
+        );
+        return ERR_STACK_UNDERFLOW;
+    }
+
+    if (cvm->stack[cvm->stack_size - 2].as_int <= cvm->stack[cvm->stack_size - 1].as_int)
+        cvm->stack[cvm->stack_size++].as_int = 1;
+    else cvm->stack[cvm->stack_size++].as_int = 0;
+
+    cvm->instr_pos  += 1;
+
+    return CATA_OK;
+};
+
+// >= operation
+//
+// 5       7
+// 5       5
+// <=      <=
+// Both is true
+CataError execute_greateq(CataVM *cvm) {
+    if (cvm->stack_size < 2) {
+        cvm_error(
+            cvm->filename, cvm->instr_stack[cvm->instr_pos].line,
+            ERR_STACK_UNDERFLOW, "stack unferflow"
+        );
+        return ERR_STACK_UNDERFLOW;
+    }
+
+    if (cvm->stack[cvm->stack_size - 2].as_int >= cvm->stack[cvm->stack_size - 1].as_int)
+        cvm->stack[cvm->stack_size++].as_int = 1;
+    else cvm->stack[cvm->stack_size++].as_int = 0;
+
+    cvm->instr_pos  += 1;
+
+    return CATA_OK;
+};
+
+///////////////////////////////////////
 
 #endif

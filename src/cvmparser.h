@@ -14,15 +14,7 @@
 #ifndef CVM_PARSER_H
 #define CVM_PARSER_H
 
-#ifndef CVM_INSTR
-    #include "cvminstr.h"
-#endif
-
 #include "catavm.h"
-
-#ifndef CVM_ERROR
-    #include "cvmerror.h"
-#endif
 
 CataError parse_insts(CataStr source, CataVM *cvm);
 
@@ -180,6 +172,7 @@ CataError parse_insts(CataStr source, CataVM *cvm) {
 
                 if (pos != -1) {
                     cvm->instr_stack[cvm->instr_stack_size].instr = token;
+                    cvm->instr_stack[cvm->instr_stack_size].warg  = true;
 
                     if (tok_list[pos].is_arg) {
                         if (arg.length == 0) {
@@ -208,13 +201,16 @@ CataError parse_insts(CataStr source, CataVM *cvm) {
                                 cvm->instr_stack[cvm->instr_stack_size].arg = makeObject(arg, "i64");
                             }
                         } else {
-                            if (is_str || !isdigit(arg.data[0])) {
+                            if (is_str || (is_str && !isdigit(arg.data[0]))) {
                                 cvm->instr_stack[cvm->instr_stack_size].arg = makeObject(arg, "str");
                             } else {
                                 if (castr_has('.', arg)) cvm->instr_stack[cvm->instr_stack_size].arg = makeObject(arg, "f64");
-                                else cvm->instr_stack[cvm->instr_stack_size].arg = makeObject(arg, "i64");
+                                else if (isdigit(arg.data[0]) || (arg.data[0] == '-' && isdigit(arg.data[1]))) cvm->instr_stack[cvm->instr_stack_size].arg = makeObject(arg, "i64");
                             }
                         }
+                    } else {
+                        cvm->instr_stack[cvm->instr_stack_size].arg = makeEmptyObject();
+                        cvm->instr_stack[cvm->instr_stack_size].warg = false;
                     }
 
                     cvm->instr_stack[cvm->instr_stack_size].line   = line_count;
