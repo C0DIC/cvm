@@ -43,11 +43,13 @@ static const char *get_ext(const char *file_path) {
 }
 
 // Get only file name, without full_path
+/*
 static const char *lazy_filename(const char *file_path) {
     const char *slash = strrchr(file_path, '/');
 
     if (!slash) return file_path; else return slash + 1;
 }
+*/
 
 CataVM CVM = {0};
 
@@ -63,7 +65,7 @@ int main(int argc, char **argv) {
     }
 
     const char *input_file_path  = NULL;
-    const char *in_filename      = NULL;
+    //const char *in_filename      = NULL;
     const char *ouput_file_path  = NULL;
 
     __u_short run                = 0;
@@ -73,7 +75,7 @@ int main(int argc, char **argv) {
 
         if (!strcmp(get_ext(arg), "cava")) {
             input_file_path = arg;
-            in_filename  = lazy_filename(input_file_path);
+            //in_filename  = lazy_filename(input_file_path);
         } 
 
         arg = get_arg(&argc, &argv);
