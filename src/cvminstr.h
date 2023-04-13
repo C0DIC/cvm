@@ -20,6 +20,34 @@
 #include <stdint.h>
 #include "../catastring/catastring.h"
 
+enum InstrType {
+    UNKNOWN_INSTR,
+    PUSH_INSTR,
+    WRT_INSTR,
+    WRTN_INSTR,
+    DUP_INSTR,
+    SWP_INSTR,
+    GOTO_INSTR,
+    CMP_INSTR,
+    IF_INSTR,
+    IFNT_INSTR,
+    ADD_INSTR,
+    SUB_INSTR,
+    DIV_INSTR,
+    MULT_INSTR,
+    MOD_INSTR,
+    INC_INSTR,
+    DEC_INSTR,
+    SCN_INSTR,
+    HLT_INSTR,
+    POP_INSTR,
+    EQUAL_INSTR,
+    GREATER_INSTR,
+    LESS_INSTR,
+    GREEQUAL_INSTR,
+    LESEQUAL_INSTR
+};
+
 typedef union {
     int64_t  as_int;
     double   as_float;
@@ -28,6 +56,7 @@ typedef union {
 
 typedef struct {
     CataStr     instr;
+    bool        warg;
     Object      arg;
     size_t      line;
 } CVMInst;

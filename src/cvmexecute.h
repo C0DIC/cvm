@@ -17,19 +17,8 @@
 
 #include "../catastring/catastring.h"
 
-#ifndef CVM_INSTR
-    #include "cvminstr.h"
-#endif
-
-#include "catavm.h"
-
-#ifndef CVM_ERROR
-    #include "cvmerror.h"
-#endif
-
-#ifdef CVM_PARSER
-    #include "cvmparser.h"
-#endif
+#define CVM_STD
+#include "cvmstd.h"
 
 CataError cvm_execute(CataVM *cvm);
 
@@ -37,37 +26,12 @@ CataError cvm_execute(CataVM *cvm);
 
 #ifdef CVM_EXECUTE
 
-static bool var_exist(CataVM *cvm, CataStr name) {
-    for (size_t pos = 0; pos < cvm->variables_stack_size; pos++) {
-        if (castr_same(name, cvm->variables_stack[pos].name)) {
-            return true;
-        }
-    }
-
-    return false;
-};
-
-static int var_ptr(CataVM *cvm, CataStr name) {
-    if (var_exist(cvm, name)) {
-        for (size_t pos = 0; pos < cvm->variables_stack_size; pos++) {
-            if (castr_same(name, cvm->variables_stack[pos].name)) return pos;
-        }
-    }
-
-    return -1;
+void cata_exit(CataError err) {
+    if (err != CATA_OK) exit(1);
 }
-
-static CataStr var_get_type(CataVM *cvm, CataStr name) {
-    if (var_exist(cvm, name)) return cvm->variables_stack[var_ptr(cvm, name)].type;
-
-    return CS("");
-};
-
 
 CataError cvm_execute(CataVM *cvm) {
     while (cvm->instr_pos != cvm->instr_stack_size && !cvm->halted) {
-        CataStr instr = cvm->instr_stack[cvm->instr_pos].instr;
-        Object  arg   = cvm->instr_stack[cvm->instr_pos].arg;
 
         if (cvm->instr_pos < 0 || cvm->instr_pos > cvm->instr_stack_size) {
                 cvm_error(cvm->filename, cvm->instr_stack[cvm->instr_pos].line,
@@ -75,345 +39,72 @@ CataError cvm_execute(CataVM *cvm) {
                 return ERR_BOUND_BREAK;
         }
 
-        if (instr.length == 0) cvm->instr_pos += 1;
+        if (cvm->instr_stack[cvm->instr_pos].instr.length == 0) cvm->instr_pos += 1;
         else {
-            if (castr_same(instr, CS("push"))) {
-                if (cvm->stack_size >= STACK_SIZE) {
-                    cvm_error(
-                        cvm->filename, cvm->instr_stack[cvm->instr_pos].line,
-                        ERR_STACK_OVERFLOW, "stack overflow");
-                    return ERR_STACK_OVERFLOW;
-                }
-
-                cvm->stack[cvm->stack_size++] = arg;
-                cvm->instr_pos += 1;
-            } else if (castr_same(instr, CS("add"))) {
-                if (cvm->stack_size < 2) {
-                    cvm_error(cvm->filename, cvm->instr_stack[cvm->instr_pos].line,
-                            ERR_STACK_UNDERFLOW, "stack underflow");
-                    return ERR_STACK_UNDERFLOW;
-                }
-
-                cvm->stack[cvm->stack_size - 2].as_int += cvm->stack[cvm->stack_size - 1].as_int;
-                cvm->stack_size -= 1;
-                cvm->instr_pos += 1;
-            } else if (castr_same(instr, CS("sub"))) {
-                if (cvm->stack_size < 2) {
-                    cvm_error(cvm->filename, cvm->instr_stack[cvm->instr_pos].line,
-                            ERR_STACK_UNDERFLOW, "stack underflow");
-                    return ERR_STACK_UNDERFLOW;
-                }
-
-                cvm->stack[cvm->stack_size - 2].as_int -= cvm->stack[cvm->stack_size - 1].as_int;
-                cvm->stack_size -= 1;
-                cvm->instr_pos += 1;
-            } else if (castr_same(instr, CS("mult"))) {
-                if (cvm->stack_size < 2) {
-                    cvm_error(cvm->filename, cvm->instr_stack[cvm->instr_pos].line,
-                            ERR_STACK_UNDERFLOW, "stack underflow");
-                    return ERR_STACK_UNDERFLOW;
-                }
-
-                cvm->stack[cvm->stack_size - 2].as_int *= cvm->stack[cvm->stack_size - 1].as_int;
-                cvm->stack_size -= 1;
-                cvm->instr_pos += 1;
-            } else if (castr_same(instr, CS("div"))) {
-                if (cvm->stack_size < 2) {
-                    cvm_error(cvm->filename, cvm->instr_stack[cvm->instr_pos].line,
-                            ERR_STACK_UNDERFLOW, "stack underflow");
-                    return ERR_STACK_UNDERFLOW;
-                }
-
-                if (cvm->stack[cvm->stack_size - 1].as_int == 0) {
-                    cvm_error(cvm->filename, cvm->instr_stack[cvm->instr_pos].line,
-                            ERR_DIVISION_BY_ZERO, "division by zero found"
-                    );
-                    return ERR_DIVISION_BY_ZERO;
-                }
-
-                cvm->stack[cvm->stack_size - 2].as_int /= cvm->stack[cvm->stack_size - 1].as_int;
-                cvm->stack_size -= 1;
-                cvm->instr_pos += 1;
-            } else if (castr_same(instr, CS("mod"))) {
-                if (cvm->stack_size < 2) {
-                    cvm_error(cvm->filename, cvm->instr_stack[cvm->instr_pos].line,
-                            ERR_STACK_UNDERFLOW, "stack underflow");
-                    return ERR_STACK_UNDERFLOW;
-                }
-
-                if (cvm->stack[cvm->stack_size - 1].as_int == 0) {
-                    cvm_error(cvm->filename, cvm->instr_stack[cvm->instr_pos].line,
-                            ERR_DIVISION_BY_ZERO, "division by zero found"
-                    );
-                    return ERR_DIVISION_BY_ZERO;
-                }
-
-                cvm->stack[cvm->stack_size - 2].as_int %= cvm->stack[cvm->stack_size - 1].as_int;
-                cvm->stack_size -= 1;
-                cvm->instr_pos += 1;
-            } else if (castr_same(instr, CS("inc"))) {
-                if (cvm->stack_size < 1) {
-                    cvm_error(cvm->filename, cvm->instr_stack[cvm->instr_pos].line,
-                            ERR_STACK_UNDERFLOW, "stack underflow");
-                    return ERR_STACK_UNDERFLOW;
-                }
-
-                cvm->stack[cvm->stack_size - 1].as_int++;
-                cvm->instr_pos += 1;
-            } else if (castr_same(instr, CS("dec"))) {
-                if (cvm->stack_size < 1) {
-                    cvm_error(cvm->filename, cvm->instr_stack[cvm->instr_pos].line,
-                            ERR_STACK_UNDERFLOW, "stack underflow");
-                    return ERR_STACK_UNDERFLOW;
-                }
-
-                cvm->stack[cvm->stack_size - 1].as_int--;
-                cvm->instr_pos += 1;
-            } else if (castr_same(instr, CS("pop"))) {
-                if (cvm->stack_size < 1) {
-                    cvm_error(cvm->filename, cvm->instr_stack[cvm->instr_pos].line,
-                            ERR_STACK_UNDERFLOW, "stack underflow");
-                    return ERR_STACK_UNDERFLOW;
-                }
-
-                cvm->stack_size -= 1;
-                cvm->instr_pos += 1;
-            } else if (castr_same(instr, CS("cmp"))) {
-                if (cvm->instr_pos < 0 || cvm->instr_pos > cvm->instr_stack_size) {
-                    cvm_error(cvm->filename, cvm->instr_stack[cvm->instr_pos].line,
-                            ERR_BOUND_BREAK, "out of bounds");
-                    return ERR_BOUND_BREAK;
-                }
-
-                if (cvm->stack[cvm->stack_size - 1].as_int == cvm->stack[arg.as_int].as_int) {
-                    cvm->instr_pos += 1;
-                } else {
-                    cvm->instr_pos += 2;
-                }
-            } else if (castr_same(instr, CS("hlt"))) {
-                cvm->halted = 1;
-            } else if (castr_same(instr, CS("dmp"))) {
-                for (size_t i = 0; i < cvm->stack_size; ++i) {
-                    printf("Stack[%ld]: i64: %ld | f64: %lf | str:"CS_PRI"\n", i, cvm->stack[i].as_int, cvm->stack[i].as_float, CS_FMT(cvm->stack[i].as_string));
-                }
-                cvm->instr_pos += 1;
-            } else if (castr_same(instr, CS("goto"))) {
-                for (size_t i = 0; i < cvm->instr_stack_size; i++) {
-                    if (cvm->instr_stack[i].line == arg.as_int)  {
-                        cvm->instr_pos = i;
-                    }
-                }
-            } else if (castr_same(instr, CS("if"))) {
-                if (cvm->stack[cvm->stack_size - 1].as_int == arg.as_int) {
-                    cvm->instr_pos += 1;
-                } else {
-                    cvm->instr_pos += 2;
-                }
-            } else if (castr_same(instr, CS("ifnt"))) {
-                if (cvm->stack[cvm->stack_size - 1].as_int != arg.as_int) {
-                    cvm->instr_pos += 1;
-                } else {
-                    cvm->instr_pos += 2;
-                }
-            } else if (castr_same(instr, CS("dup"))) {
-                if (cvm->stack_size >= STACK_SIZE) {
-                    cvm_error(cvm->filename, cvm->instr_stack[cvm->instr_pos].line,
-                    ERR_STACK_OVERFLOW, "stack overflow");
-                    return ERR_STACK_OVERFLOW;
-                }
-
-                if (arg.as_int < 0) {
-                    cvm_error(cvm->filename, cvm->instr_stack[cvm->instr_pos].line,
-                    ERR_STACK_UNDERFLOW, "stack underflow");
-                    return ERR_STACK_UNDERFLOW;
-                }
-
-                if (arg.as_int > cvm->stack_size) {
-                    cvm_error(cvm->filename, cvm->instr_stack[cvm->instr_pos].line,
-                    ERR_STACK_OVERFLOW, "stack overflow");
-                    return ERR_STACK_OVERFLOW;
-                }
-
-                cvm->stack[cvm->stack_size] = cvm->stack[cvm->stack_size - 1 - arg.as_int];
-                cvm->stack_size += 1;
-                cvm->instr_pos  += 1;
-            } else if (castr_same(instr, CS("wrt"))) {
-                if (castr_same(CS("i64"), arg.as_string)) {
-                    printf("%ld", cvm->stack[cvm->stack_size - 1].as_int);
-                } else if (castr_same(CS("f64"), arg.as_string)) {
-                    printf("%lf", cvm->stack[cvm->stack_size - 1].as_float);
-                } else if (castr_same(CS("str"), arg.as_string)) {
-                    printf(CS_PRI"", CS_FMT(cvm->stack[cvm->stack_size - 1].as_string));
-                } else if (castr_startswith("$", arg.as_string)) {
-                    arg.as_string = castr_cut_by(1, arg.as_string);
-                    if (var_exist(cvm, arg.as_string)) {
-                        if (castr_same(CS("str"), var_get_type(cvm, arg.as_string))) {
-                            printf(CS_PRI"", CS_FMT(cvm->variables_stack[var_ptr(cvm, arg.as_string)].value.as_string));
-                        } else if (castr_same(CS("i64"), var_get_type(cvm, arg.as_string))) {
-                            printf("%ld", cvm->variables_stack[var_ptr(cvm, arg.as_string)].value.as_int);
-                        } else if (castr_same(CS("f64"), var_get_type(cvm, arg.as_string))) {
-                            printf("%lf", cvm->variables_stack[var_ptr(cvm, arg.as_string)].value.as_float);
-                        }
-                    } else {
-                        fprintf(stderr,
+            if (cvm->instr_stack[cvm->instr_pos].warg) {
+                if (castr_same(CS("push"), cvm->instr_stack[cvm->instr_pos].instr))
+                    cata_exit(execute_push(cvm, cvm->instr_stack[cvm->instr_pos].arg));
+                else if (castr_same(CS("wrt"), cvm->instr_stack[cvm->instr_pos].instr))
+                    cata_exit(execute_wrt(cvm, cvm->instr_stack[cvm->instr_pos].arg));
+                else if (castr_same(CS("wrtn"), cvm->instr_stack[cvm->instr_pos].instr))
+                    cata_exit(execute_wrtn(cvm, cvm->instr_stack[cvm->instr_pos].arg));
+                else if (castr_same(CS("if"), cvm->instr_stack[cvm->instr_pos].instr))
+                    cata_exit(execute_if(cvm, cvm->instr_stack[cvm->instr_pos].arg));
+                else if (castr_same(CS("ifnt"), cvm->instr_stack[cvm->instr_pos].instr))
+                    cata_exit(execute_ifnt(cvm, cvm->instr_stack[cvm->instr_pos].arg));
+                else if (castr_same(CS("cmp"), cvm->instr_stack[cvm->instr_pos].instr))
+                    cata_exit(execute_cmp(cvm, cvm->instr_stack[cvm->instr_pos].arg));
+                else if (castr_same(CS("goto"), cvm->instr_stack[cvm->instr_pos].instr))
+                    cata_exit(execute_goto(cvm, cvm->instr_stack[cvm->instr_pos].arg));
+                else if (castr_same(CS("swp"), cvm->instr_stack[cvm->instr_pos].instr))
+                    cata_exit(execute_swp(cvm, cvm->instr_stack[cvm->instr_pos].arg));
+                else if (castr_same(CS("dup"), cvm->instr_stack[cvm->instr_pos].instr))
+                    cata_exit(execute_dup(cvm, cvm->instr_stack[cvm->instr_pos].arg));
+                else {
+                    fprintf (stderr,
                             "%s:\n  |___%s: %lu: %s `"CS_PRI"`\n",
-                            cvm->filename, cvm_err_to_cstr(ERR_UNKNOWN_VARIABLE), cvm->instr_stack[cvm->instr_pos].line,
-                            "unknown variable", CS_FMT(arg.as_string)
-                        );
-
-                        return ERR_UNKNOWN_VARIABLE;
-                    }
-                } else {
-                    fprintf(stderr,
-                        "%s:\n  |___%s: %lu: %s `"CS_PRI"`\n",
-                        cvm->filename, cvm_err_to_cstr(ERR_UNKNOWN_TYPE), cvm->instr_stack[cvm->instr_pos].line,
-                        "unknown type", CS_FMT(arg.as_string)
+                            cvm->filename, cvm_err_to_cstr(ERR_NAME_ERROR), cvm->instr_stack[cvm->instr_pos].line,
+                            "unknown name", CS_FMT(cvm->instr_stack[cvm->instr_pos].instr)
                     );
 
-                    return ERR_UNKNOWN_TYPE;
+                    return ERR_NAME_ERROR;
                 }
-
-                cvm->instr_pos  += 1;
-            } else if (castr_same(instr, CS("wrtn"))) {
-                if (castr_same(CS("i64"), arg.as_string)) {
-                    printf("%ld\n", cvm->stack[cvm->stack_size - 1].as_int);
-                } else if (castr_same(CS("f64"), arg.as_string)) {
-                    printf("%lf\n", cvm->stack[cvm->stack_size - 1].as_float);
-                } else if (castr_same(CS("str"), arg.as_string)) {
-                    printf(CS_PRI"\n", CS_FMT(cvm->stack[cvm->stack_size - 1].as_string));
-                } else if (castr_startswith("$", arg.as_string)) {
-                    arg.as_string = castr_cut_by(1, arg.as_string);
-                    if (var_exist(cvm, arg.as_string)) {
-                        if (castr_same(CS("str"), var_get_type(cvm, arg.as_string))) {
-                            printf(CS_PRI"\n", CS_FMT(cvm->variables_stack[var_ptr(cvm, arg.as_string)].value.as_string));
-                        } else if (castr_same(CS("i64"), var_get_type(cvm, arg.as_string))) {
-                            printf("%ld\n", cvm->variables_stack[var_ptr(cvm, arg.as_string)].value.as_int);
-                        } else if (castr_same(CS("f64"), var_get_type(cvm, arg.as_string))) {
-                            printf("%lf\n", cvm->variables_stack[var_ptr(cvm, arg.as_string)].value.as_float);
-                        }
-                    } else {
-                        fprintf(stderr,
-                            "%s:\n  |___%s: %lu: %s `"CS_PRI"`\n",
-                            cvm->filename, cvm_err_to_cstr(ERR_UNKNOWN_VARIABLE), cvm->instr_stack[cvm->instr_pos].line,
-                            "unknown variable", CS_FMT(arg.as_string)
-                        );
-
-                        return ERR_UNKNOWN_VARIABLE;
-                    }
-                } else {
-                    fprintf(stderr,
-                        "%s:\n  |___%s: %lu: %s `"CS_PRI"`\n",
-                        cvm->filename, cvm_err_to_cstr(ERR_UNKNOWN_TYPE), cvm->instr_stack[cvm->instr_pos].line,
-                        "unknown type", CS_FMT(arg.as_string)
-                    );
-
-                    return ERR_UNKNOWN_TYPE;
-                }
-
-                cvm->instr_pos  += 1;
-            } else if (castr_endswith(":", instr)) {
-                cvm->instr_pos  += 1;
-            } else if (castr_startswith(".", instr)) {
-                cvm->instr_pos  += 1;
-            } else if (castr_same(instr, CS("scn"))) {
-                if (cvm->stack_size >= STACK_SIZE) {
-                    cvm_error(
-                        cvm->filename, cvm->instr_stack[cvm->instr_pos].line,
-                        ERR_STACK_OVERFLOW, "stack overflow");
-                    return ERR_STACK_OVERFLOW;
-                }
-
-                scanf("%ld", &cvm->stack[cvm->stack_size++].as_int);
-                cvm->instr_pos  += 1;
-            } else if (castr_same(instr, CS("swp"))) {
-                if (cvm->instr_pos < 0 || cvm->instr_pos > cvm->instr_stack_size) {
-                    cvm_error(cvm->filename, cvm->instr_stack[cvm->instr_pos].line,
-                            ERR_BOUND_BREAK, "out of bounds");
-                    return ERR_BOUND_BREAK;
-                }
-
-                Object temp = cvm->stack[cvm->stack_size - 1];
-
-                cvm->stack[cvm->stack_size - 1] = cvm->stack[arg.as_int];
-                cvm->stack[arg.as_int] = temp;
-                cvm->instr_pos  += 1;
-            } else if (castr_same(instr, CS("=="))) {
-                if (cvm->stack_size < 2) {
-                    cvm_error(cvm->filename, cvm->instr_stack[cvm->instr_pos].line,
-                            ERR_STACK_UNDERFLOW, "stack underflow");
-                    return ERR_STACK_UNDERFLOW;
-                }
-
-                if (cvm->stack[cvm->stack_size - 2].as_int == cvm->stack[cvm->stack_size - 1].as_int)
-                    cvm->stack[cvm->stack_size].as_int = 1;
-                else cvm->stack[cvm->stack_size].as_int = 0;
-
-                cvm->stack_size += 1;
-                cvm->instr_pos  += 1;
-            } else if (castr_same(instr, CS("<"))) {
-                if (cvm->stack_size < 2) {
-                    cvm_error(cvm->filename, cvm->instr_stack[cvm->instr_pos].line,
-                            ERR_STACK_UNDERFLOW, "stack underflow");
-                    return ERR_STACK_UNDERFLOW;
-                }
-
-                if (cvm->stack[cvm->stack_size - 2].as_int < cvm->stack[cvm->stack_size - 1].as_int)
-                    cvm->stack[cvm->stack_size].as_int = 1;
-                else cvm->stack[cvm->stack_size].as_int = 0;
-
-                cvm->stack_size += 1;
-                cvm->instr_pos  += 1;
-            } else if (castr_same(instr, CS(">"))) {
-                if (cvm->stack_size < 2) {
-                    cvm_error(cvm->filename, cvm->instr_stack[cvm->instr_pos].line,
-                            ERR_STACK_UNDERFLOW, "stack underflow");
-                    return ERR_STACK_UNDERFLOW;
-                }
-
-                if (cvm->stack[cvm->stack_size - 2].as_int > cvm->stack[cvm->stack_size - 1].as_int)
-                    cvm->stack[cvm->stack_size].as_int = 1;
-                else cvm->stack[cvm->stack_size].as_int = 0;
-
-                cvm->stack_size += 1;
-                cvm->instr_pos  += 1;
-            } else if (castr_same(instr, CS("<="))) {
-                if (cvm->stack_size < 2) {
-                    cvm_error(cvm->filename, cvm->instr_stack[cvm->instr_pos].line,
-                            ERR_STACK_UNDERFLOW, "stack underflow");
-                    return ERR_STACK_UNDERFLOW;
-                }
-
-                if (cvm->stack[cvm->stack_size - 2].as_int <= cvm->stack[cvm->stack_size - 1].as_int)
-                    cvm->stack[cvm->stack_size].as_int = 1;
-                else cvm->stack[cvm->stack_size].as_int = 0;
-
-                cvm->stack_size += 1;
-                cvm->instr_pos  += 1;
-            } else if (castr_same(instr, CS(">="))) {
-                if (cvm->stack_size < 2) {
-                    cvm_error(cvm->filename, cvm->instr_stack[cvm->instr_pos].line,
-                            ERR_STACK_UNDERFLOW, "stack underflow");
-                    return ERR_STACK_UNDERFLOW;
-                }
-
-                if (cvm->stack[cvm->stack_size - 2].as_int >= cvm->stack[cvm->stack_size - 1].as_int)
-                    cvm->stack[cvm->stack_size].as_int = 1;
-                else cvm->stack[cvm->stack_size].as_int = 0;
-
-                cvm->stack_size += 1;
-                cvm->instr_pos  += 1;
             } else {
-                fprintf(stderr,
+                if (castr_same(CS("add"), cvm->instr_stack[cvm->instr_pos].instr))
+                    cata_exit(execute_add(cvm));
+                else if (castr_same(CS("sub"), cvm->instr_stack[cvm->instr_pos].instr))
+                    cata_exit(execute_sub(cvm));
+                else if (castr_same(CS("mult"), cvm->instr_stack[cvm->instr_pos].instr))
+                    cata_exit(execute_mult(cvm));
+                else if (castr_same(CS("div"), cvm->instr_stack[cvm->instr_pos].instr))
+                    cata_exit(execute_div(cvm));
+                else if (castr_same(CS("mod"), cvm->instr_stack[cvm->instr_pos].instr))
+                    cata_exit(execute_mod(cvm));
+                else if (castr_same(CS("inc"), cvm->instr_stack[cvm->instr_pos].instr))
+                    cata_exit(execute_inc(cvm));
+                else if (castr_same(CS("dec"), cvm->instr_stack[cvm->instr_pos].instr))
+                    cata_exit(execute_dec(cvm));
+                else if (castr_same(CS("hlt"), cvm->instr_stack[cvm->instr_pos].instr))
+                    cata_exit(execute_hlt(cvm));
+                else if (castr_same(CS("pop"), cvm->instr_stack[cvm->instr_pos].instr))
+                    cata_exit(execute_pop(cvm));
+                else if (castr_same(CS("scn"), cvm->instr_stack[cvm->instr_pos].instr))
+                    cata_exit(execute_scn(cvm));
+                else if (castr_endswith  (":", cvm->instr_stack[cvm->instr_pos].instr) ||
+                         castr_startswith(".", cvm->instr_stack[cvm->instr_pos].instr))
+                                cvm->instr_pos += 1;
+                else {
+                    fprintf (stderr,
                         "%s:\n  |___%s: %lu: %s `"CS_PRI"`\n",
                         cvm->filename, cvm_err_to_cstr(ERR_NAME_ERROR), cvm->instr_stack[cvm->instr_pos].line,
-                        "unknown name", CS_FMT(instr)
+                        "unknown name", CS_FMT(cvm->instr_stack[cvm->instr_pos].instr)
                     );
 
-                return ERR_NAME_ERROR;
+                    return ERR_NAME_ERROR;
+                }
             }
         }
     }
-
     return CATA_OK;
 }
 
