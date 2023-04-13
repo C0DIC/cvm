@@ -22,6 +22,13 @@
 - [x] hlt
 - [x] scn
 - [x] pop
+- [x] dmp
+- [x] <
+- [x] >
+- [x] <=
+- [x] >=
+- [x] ==
+- [x] !=
 
 ## Labels
 
