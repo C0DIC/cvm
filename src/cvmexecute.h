@@ -32,7 +32,6 @@ void cata_exit(CataError err) {
 
 CataError cvm_execute(CataVM *cvm) {
     while (cvm->instr_pos != cvm->instr_stack_size && !cvm->halted) {
-
         if (cvm->instr_pos < 0 || cvm->instr_pos > cvm->instr_stack_size) {
                 cvm_error(cvm->filename, cvm->instr_stack[cvm->instr_pos].line,
                           ERR_BOUND_BREAK, "out of bounds");
@@ -44,7 +43,7 @@ CataError cvm_execute(CataVM *cvm) {
             if (cvm->instr_stack[cvm->instr_pos].warg) {
                 if (castr_same(CS("push"), cvm->instr_stack[cvm->instr_pos].instr))
                     cata_exit(execute_push(cvm, cvm->instr_stack[cvm->instr_pos].arg));
-                else if (castr_same(CS("wrt"), cvm->instr_stack[cvm->instr_pos].instr))
+                else if (castr_same(CS("wrt"), cvm->instr_stack[cvm->instr_pos].instr)) 
                     cata_exit(execute_wrt(cvm, cvm->instr_stack[cvm->instr_pos].arg));
                 else if (castr_same(CS("wrtn"), cvm->instr_stack[cvm->instr_pos].instr))
                     cata_exit(execute_wrtn(cvm, cvm->instr_stack[cvm->instr_pos].arg));

@@ -251,6 +251,14 @@ CataError execute_wrt(CataVM *cvm, Object arg) {
 
             return ERR_UNKNOWN_VARIABLE;
         }
+    } else {
+        fprintf(stderr,
+            "%s:\n  |___%s: %lu: %s `"CS_PRI"`\n",
+            cvm->filename, cvm_err_to_cstr(ERR_UNKNOWN_TYPE), cvm->instr_stack[cvm->instr_pos].line,
+            "unexcepted value. excepted type or variable", CS_FMT(arg.as_string)
+        );
+
+        return ERR_UNKNOWN_TYPE;
     }
 
     cvm->instr_pos += 1;
@@ -271,7 +279,7 @@ CataError execute_wrtn(CataVM *cvm, Object arg) {
     else if (castr_same(arg.as_string, CS("f64")))
         printf64(cvm->stack[cvm->stack_size - 1].as_float, true);
     else if (castr_same(arg.as_string, CS("str")))
-        printstr(cvm->stack[cvm->stack_size -1].as_string, true);
+        printstr(cvm->stack[cvm->stack_size - 1].as_string, true);
     else if (castr_startswith("$", arg.as_string)) {
         if (var_exist(cvm, castr_cut_by(1, arg.as_string))) {
             if (castr_same(CS("str"), getType(cvm, castr_cut_by(1, arg.as_string))))
@@ -289,6 +297,14 @@ CataError execute_wrtn(CataVM *cvm, Object arg) {
 
             return ERR_UNKNOWN_VARIABLE;
         }
+    } else {
+        fprintf(stderr,
+            "%s:\n  |___%s: %lu: %s `"CS_PRI"`\n",
+            cvm->filename, cvm_err_to_cstr(ERR_UNKNOWN_TYPE), cvm->instr_stack[cvm->instr_pos].line,
+            "unexcepted value. excepted type or variable, but found", CS_FMT(arg.as_string)
+        );
+
+        return ERR_UNKNOWN_TYPE;
     }
 
     cvm->instr_pos += 1;

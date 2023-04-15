@@ -201,7 +201,7 @@ CataError parse_insts(CataStr source, CataVM *cvm) {
                                 cvm->instr_stack[cvm->instr_stack_size].arg = makeObject(arg, "i64");
                             }
                         } else {
-                            if (is_str || (is_str && !isdigit(arg.data[0]))) {
+                            if (is_str || (!isdigit(arg.data[0]) && arg.data[0] != '-')) {
                                 cvm->instr_stack[cvm->instr_stack_size].arg = makeObject(arg, "str");
                             } else {
                                 if (castr_has('.', arg)) cvm->instr_stack[cvm->instr_stack_size].arg = makeObject(arg, "f64");
