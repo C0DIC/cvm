@@ -113,7 +113,7 @@ int main(int argc, char **argv) {
     CataError exec_prog = parse_insts(CS(cava_source), &CVM);
 
     if (exec_prog == CATA_OK) {
-        if (!ouput_file_path) {
+        if (ouput_file_path) {
             assert(0 && "<error>: not implemented yet");
         }
         else {
