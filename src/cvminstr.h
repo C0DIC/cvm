@@ -14,7 +14,7 @@
 #ifndef CVM_INSTRUCTION_H
 #define CVM_INSTRUCTION_H
 
-#define TOKEN_COUNT 22
+#define TOKEN_COUNT 24
 
 #include <stdlib.h>
 #include <stdint.h>
@@ -127,10 +127,10 @@ void createTokenList(Token *token_list) {
     token_list[18] = createToken(CS("pop"), false);
 
     token_list[19] = createToken(CS("=="), false);
-    token_list[22] = createToken(CS("<="), false);
-    token_list[23] = createToken(CS(">="), false);
-    token_list[20] = createToken(CS("<"), false);
-    token_list[21] = createToken(CS(">"), false);
+    token_list[20] = createToken(CS("<="), false);
+    token_list[21] = createToken(CS(">="), false);
+    token_list[22] = createToken(CS("<"), false);
+    token_list[23] = createToken(CS(">"), false);
 }
 
 #endif
