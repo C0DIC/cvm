@@ -49,9 +49,9 @@ enum InstrType {
 };
 
 typedef union {
-    int64_t  as_int;
-    double   as_float;
-    CataStr  as_string;
+    __ssize_t  as_int;
+    double      as_float;
+    CataStr     as_string;
 } Object;
 
 typedef struct {
