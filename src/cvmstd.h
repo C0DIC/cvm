@@ -221,20 +221,7 @@ static CataStr getType(CataVM *cvm, CataStr name) {
 
 // Standart print without new line
 CataError execute_wrt(CataVM *cvm, Object arg) {
-    if (cvm->stack_size < 1) {
-        cvm_error(cvm->filename, cvm->instr_stack[cvm->instr_pos].line,
-            ERR_STACK_UNDERFLOW, "stack underflow"
-        );
-        return ERR_STACK_UNDERFLOW;
-    }
-
-    if (castr_same(arg.as_string, CS("i64")))
-        printi64(cvm->stack[cvm->stack_size - 1].as_int, false);
-    else if (castr_same(arg.as_string, CS("f64")))
-        printf64(cvm->stack[cvm->stack_size - 1].as_float, false);
-    else if (castr_same(arg.as_string, CS("str")))
-        printstr(cvm->stack[cvm->stack_size -1].as_string, false);
-    else if (castr_startswith("$", arg.as_string)) {
+    if (castr_startswith("$", arg.as_string)) {
         if (var_exist(cvm, castr_cut_by(1, arg.as_string))) {
             if (castr_same(CS("str"), getType(cvm, castr_cut_by(1, arg.as_string))))
                 printstr(cvm->variables_stack[var_indx(cvm, castr_cut_by(1, arg.as_string))].value.as_string, false);
@@ -251,7 +238,25 @@ CataError execute_wrt(CataVM *cvm, Object arg) {
 
             return ERR_UNKNOWN_VARIABLE;
         }
-    } else {
+
+        cvm->instr_pos += 1;
+        return CATA_OK;
+    } 
+
+    if (cvm->stack_size < 1) {
+        cvm_error(cvm->filename, cvm->instr_stack[cvm->instr_pos].line,
+            ERR_STACK_UNDERFLOW, "stack underflow"
+        );
+        return ERR_STACK_UNDERFLOW;
+    }
+
+    if (castr_same(arg.as_string, CS("i64")))
+        printi64(cvm->stack[cvm->stack_size - 1].as_int, false);
+    else if (castr_same(arg.as_string, CS("f64")))
+        printf64(cvm->stack[cvm->stack_size - 1].as_float, false);
+    else if (castr_same(arg.as_string, CS("str")))
+        printstr(cvm->stack[cvm->stack_size -1].as_string, false);
+    else {
         fprintf(stderr,
             "%s:\n  |___%s: %lu: %s `"CS_PRI"`\n",
             cvm->filename, cvm_err_to_cstr(ERR_UNKNOWN_TYPE), cvm->instr_stack[cvm->instr_pos].line,
@@ -267,20 +272,7 @@ CataError execute_wrt(CataVM *cvm, Object arg) {
 
 // Standart print with new line
 CataError execute_wrtn(CataVM *cvm, Object arg) {
-    if (cvm->stack_size < 1) {
-        cvm_error(cvm->filename, cvm->instr_stack[cvm->instr_pos].line,
-            ERR_STACK_UNDERFLOW, "stack underflow"
-        );
-        return ERR_STACK_UNDERFLOW;
-    }
-
-    if (castr_same(arg.as_string, CS("i64")))
-        printi64(cvm->stack[cvm->stack_size - 1].as_int, true);
-    else if (castr_same(arg.as_string, CS("f64")))
-        printf64(cvm->stack[cvm->stack_size - 1].as_float, true);
-    else if (castr_same(arg.as_string, CS("str")))
-        printstr(cvm->stack[cvm->stack_size - 1].as_string, true);
-    else if (castr_startswith("$", arg.as_string)) {
+    if (castr_startswith("$", arg.as_string)) {
         if (var_exist(cvm, castr_cut_by(1, arg.as_string))) {
             if (castr_same(CS("str"), getType(cvm, castr_cut_by(1, arg.as_string))))
                 printstr(cvm->variables_stack[var_indx(cvm, castr_cut_by(1, arg.as_string))].value.as_string, true);
@@ -297,7 +289,25 @@ CataError execute_wrtn(CataVM *cvm, Object arg) {
 
             return ERR_UNKNOWN_VARIABLE;
         }
-    } else {
+
+        cvm->instr_pos += 1;
+        return CATA_OK;
+    }
+
+    if (cvm->stack_size < 1) {
+        cvm_error(cvm->filename, cvm->instr_stack[cvm->instr_pos].line,
+            ERR_STACK_UNDERFLOW, "stack underflow"
+        );
+        return ERR_STACK_UNDERFLOW;
+    }
+
+    if (castr_same(arg.as_string, CS("i64")))
+        printi64(cvm->stack[cvm->stack_size - 1].as_int, true);
+    else if (castr_same(arg.as_string, CS("f64")))
+        printf64(cvm->stack[cvm->stack_size - 1].as_float, true);
+    else if (castr_same(arg.as_string, CS("str")))
+        printstr(cvm->stack[cvm->stack_size - 1].as_string, true);
+    else {
         fprintf(stderr,
             "%s:\n  |___%s: %lu: %s `"CS_PRI"`\n",
             cvm->filename, cvm_err_to_cstr(ERR_UNKNOWN_TYPE), cvm->instr_stack[cvm->instr_pos].line,
