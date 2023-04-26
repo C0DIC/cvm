@@ -163,8 +163,8 @@ CataError execute_mod(CataVM *cvm) {
 // Printing functions
 
 static CataError printi64(int64_t arg, bool new_line) {
-    if (new_line) printf("%ld\n", arg);
-    else printf("%ld", arg);
+    if (new_line) printf("%zi\n", arg);
+    else printf("%zi", arg);
 
     return CATA_OK;
 };
@@ -466,7 +466,7 @@ CataError execute_scn(CataVM *cvm) {
         return ERR_STACK_OVERFLOW;
     }
 
-    scanf("%ld", &cvm->stack[cvm->stack_size++].as_int);
+    scanf("%zi", &cvm->stack[cvm->stack_size++].as_int);
     cvm->instr_pos  += 1;
 
     return CATA_OK;
