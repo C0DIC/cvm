@@ -1,0 +1,40 @@
+// Fully work (i suppose) pow in pure Cava
+
+// Получение основания
+scn       // Основание
+dup 0
+
+// Получение степени
+scn       // Степень
+
+main:
+    if 0
+        goto zeropow
+
+    loop:
+        ifnt 1
+            goto pow
+        pop
+        wrtn i64
+        hlt
+
+pow:
+    swp 0
+    dup 0
+    swp 0
+    swp 1
+
+    mult
+
+    swp 1
+    dec
+
+    goto loop
+
+zeropow:
+    pop
+    pop
+    pop
+    push 1
+    wrtn i64
+    hlt
