@@ -140,6 +140,16 @@ CataError parse_insts(CataStr source, CataVM *cvm) {
                 cvm->instr_stack[cvm->instr_stack_size].line    = line_count;
                 cvm->instr_stack_size += 1;
             } else if (castr_startswith(".", token)) {
+                if (var_exist(cvm, castr_cut_by(1, token))) {
+                    fprintf(stderr,
+                        "%s:\n  |___%s: %lu: %s `"CS_PRI"`\n",
+                        cvm->filename, cvm_err_to_cstr(ERR_NAME_ERROR), line_count,
+                        "reassignment of existing variable", CS_FMT(castr_cut_by(1, token))
+                    );
+
+                    return ERR_VAR_EXIST;
+                }
+
                 cvm->variables_stack[cvm->variables_stack_size].name   = castr_cut_by(1, token);
                 cvm->variables_stack[cvm->variables_stack_size].ptr    = cvm->variables_stack_size;
 
