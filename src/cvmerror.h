@@ -28,6 +28,7 @@ typedef enum {
     ERR_UNKNOWN_LABEL,
     ERR_UNKNOWN_TYPE,
     ERR_UNKNOWN_VARIABLE,
+    ERR_VAR_EXIST,
     ERR_SYNTAX_ERROR
 } CataError;
 
@@ -52,6 +53,7 @@ char *cvm_err_to_cstr(CataError error) {
         case ERR_UNKNOWN_LABEL:         return "Unknown Label"; break;
         case ERR_UNKNOWN_TYPE:          return "Type Error"; break;
         case ERR_UNKNOWN_VARIABLE:      return "Unknown Variable"; break;
+        case ERR_VAR_EXIST:             return "Variable Exist"; break;
         default: break;
     }
 }
